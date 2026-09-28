@@ -1,48 +1,32 @@
-import { useState } from 'react'
 import TaskItem from './taskitem'
 
-function TodayCard() {
-  const [tasks, setTasks] = useState([
+function TodayCard({ onOpenCommitment }) {
+  const commitments = [
     {
       id: 1,
       title: 'DSA Assignment',
-      detail: 'Complete questions 3–4',
+      detail: 'Questions 3–4 · 1h scheduled today',
       type: 'assignment',
-      duration: '1h',
-      completed: false,
+      progress: 68,
+      due: 'Due Sep 30',
     },
     {
       id: 2,
-      title: 'Physics',
-      detail: 'Revise Unit 2',
+      title: 'Physics Midterm',
+      detail: 'Unit 2 · 45m scheduled today',
       type: 'study',
-      duration: '45m',
-      completed: false,
+      progress: 32,
+      due: '3 days left',
     },
     {
       id: 3,
       title: 'Microsoft Internship',
-      detail: 'Update project section of résumé',
+      detail: 'Résumé · 30m scheduled today',
       type: 'career',
-      duration: '30m',
-      completed: true,
+      progress: 25,
+      due: 'Due Oct 3',
     },
-  ])
-
-  const toggleTask = (id) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id
-          ? { ...task, completed: !task.completed }
-          : task
-      )
-    )
-  }
-  const completedCount = tasks.filter((task) => task.completed).length
-
-  const progress = Math.round(
-    (completedCount / tasks.length) * 100
-  )
+  ]
 
   return (
     <section className="today-card">
@@ -54,26 +38,13 @@ function TodayCard() {
 
         <span className="total-time">2h 15m</span>
       </div>
-      <div className="today-progress">
-
-      <div className="progress-info">
-          <span>Daily progress</span>
-          <strong>{progress}%</strong>
-        </div>    
-        <div className="progress-track">
-          <div
-            className="progress-fill"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
 
       <div className="task-list">
-        {tasks.map((task) => (
+        {commitments.map((commitment) => (
           <TaskItem
-            key={task.id}
-            task={task}
-            onToggle={toggleTask}
+            key={commitment.id}
+            task={commitment}
+            onOpen={() => onOpenCommitment(commitment.id)}
           />
         ))}
       </div>

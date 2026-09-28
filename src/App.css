@@ -623,3 +623,419 @@ h1 {
     order: 2;
   }
 }
+
+
+.commitment-row {
+  width: 100%;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    82px
+    20px;
+
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+
+  background: transparent;
+  color: inherit;
+
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
+}
+
+.commitment-row:hover {
+  background: #faf9f5;
+}
+
+.task-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.task-progress strong {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.task-progress span {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.row-arrow {
+  color: #aaa69b;
+  font-size: 14px;
+
+  transition: transform 150ms ease;
+}
+
+.commitment-row:hover .row-arrow {
+  transform: translateX(3px);
+}
+/* ---------- Commitment detail ---------- */
+
+.commitment-detail {
+  width: 100%;
+}
+
+.back-button {
+  margin-bottom: 26px;
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  color: var(--text);
+}
+
+.commitment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 30px;
+
+  margin-bottom: 28px;
+}
+
+.commitment-header h1 {
+  margin: 8px 0 7px;
+  font-size: 36px;
+}
+
+.commitment-header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.commitment-type {
+  padding: 5px 8px;
+
+  background: #e5effa;
+  color: #3f6f9e;
+
+  border-radius: 999px;
+
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.complete-button {
+  padding: 10px 14px;
+
+  border: 1px solid var(--border);
+  border-radius: 9px;
+
+  background: var(--surface);
+  color: var(--text);
+
+  font-size: 11px;
+  font-weight: 650;
+
+  cursor: pointer;
+}
+
+.complete-button.completed {
+  background: #edf3e8;
+  border-color: #d5e2cd;
+  color: #557248;
+}
+
+/* Stats */
+
+.commitment-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+
+  margin-bottom: 20px;
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  overflow: hidden;
+}
+
+.commitment-stats > div {
+  padding: 18px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  border-right: 1px solid var(--border);
+}
+
+.commitment-stats > div:last-child {
+  border-right: 0;
+}
+
+.commitment-stats span {
+  color: var(--muted);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+.commitment-stats strong {
+  font-size: 14px;
+}
+
+/* Main detail layout */
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.75fr);
+  gap: 18px;
+}
+
+.work-plan,
+.analysis-card {
+  padding: 22px;
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.detail-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  margin-bottom: 18px;
+}
+
+.detail-section-heading h2,
+.analysis-heading h2 {
+  margin: 0;
+
+  font-size: 18px;
+  letter-spacing: -0.4px;
+}
+
+.detail-section-heading > span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+/* Sessions */
+
+.session-item {
+  display: grid;
+  grid-template-columns: 105px minmax(0, 1fr) 42px;
+  gap: 16px;
+  align-items: center;
+
+  padding: 16px 0;
+
+  border-top: 1px solid var(--border);
+}
+
+.session-date {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.session-date strong {
+  font-size: 11px;
+}
+
+.session-date span {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.session-main {
+  min-width: 0;
+}
+
+.session-main > strong {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 12px;
+}
+
+.session-main > span {
+  display: block;
+
+  margin-top: 5px;
+
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.session-progress-track {
+  height: 5px;
+
+  overflow: hidden;
+
+  background: var(--background);
+  border-radius: 999px;
+}
+
+.session-progress-fill {
+  height: 100%;
+
+  background: var(--text);
+  border-radius: inherit;
+}
+
+.session-percent {
+  font-size: 11px;
+  text-align: right;
+}
+
+/* AI analysis */
+
+.analysis-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  margin-bottom: 20px;
+}
+
+.analysis-result {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 10px 0;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.analysis-result span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.analysis-result strong {
+  font-size: 11px;
+}
+
+.analysis-copy {
+  margin-top: 18px;
+
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.analysis-copy p {
+  color: var(--text);
+  font-weight: 650;
+}
+
+.analysis-copy ul {
+  padding-left: 16px;
+}
+
+.analysis-suggestion {
+  margin-top: 18px;
+  padding: 15px;
+
+  background: #f5f2ea;
+  border-radius: 11px;
+}
+
+.analysis-suggestion > span {
+  color: var(--muted);
+
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.analysis-suggestion strong {
+  display: block;
+
+  margin-top: 7px;
+
+  font-size: 11px;
+}
+
+.analysis-suggestion p {
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.analysis-suggestion button {
+  padding: 7px 10px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: var(--text);
+  color: white;
+
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.analysis-off {
+  padding: 20px;
+
+  background: var(--background);
+  border-radius: 10px;
+}
+
+.analysis-off strong {
+  font-size: 12px;
+}
+
+.analysis-off p {
+  margin-bottom: 0;
+
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .commitment-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .commitment-header {
+    flex-direction: column;
+  }
+
+  .commitment-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .session-item {
+    grid-template-columns: 80px minmax(0, 1fr);
+  }
+
+  .session-percent {
+    display: none;
+  }
+}
