@@ -1,4 +1,4 @@
-function TopNav({ currentPage, onNavigate }) {
+function TopNav({ currentPage, onNavigate ,onAdd}) {
   return (
     <header className="top-nav">
       <div className="top-nav-inner">
@@ -44,7 +44,10 @@ function TopNav({ currentPage, onNavigate }) {
             Pressure
           </button>
 
-          <button className="add-nav-button">
+          <button 
+            className="add-nav-button"
+            onClick={onAdd}
+            >            
             + Add
           </button>
         </nav>

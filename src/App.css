@@ -1039,3 +1039,300 @@ h1 {
     display: none;
   }
 }
+/* ---------- Add Commitment Modal ---------- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: rgba(32, 32, 30, 0.35);
+  backdrop-filter: blur(4px);
+}
+
+.add-modal {
+  width: min(620px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+
+  padding: 28px;
+
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.15);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+
+  margin-bottom: 24px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: var(--text);
+
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
+}
+
+.modal-header p {
+  margin: 6px 0 0;
+
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.close-button {
+  width: 32px;
+  height: 32px;
+
+  flex-shrink: 0;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: var(--background);
+  color: var(--muted);
+
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.close-button:hover {
+  color: var(--text);
+}
+.type-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+
+  margin-bottom: 24px;
+}
+
+.type-button {
+  padding: 8px 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 999px;
+
+  background: transparent;
+  color: var(--muted);
+
+  font-size: 11px;
+  cursor: pointer;
+
+  transition: 150ms ease;
+}
+
+.type-button:hover {
+  border-color: #bbb8af;
+  color: var(--text);
+}
+
+.type-button.selected {
+  background: var(--text);
+  border-color: var(--text);
+  color: white;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  margin-bottom: 17px;
+}
+
+.form-group label {
+  color: var(--text);
+
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+
+  padding: 11px 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  outline: none;
+
+  background: #fbfaf7;
+  color: var(--text);
+
+  font-size: 12px;
+
+  transition:
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  background: white;
+  border-color: #aaa69b;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.hours-input {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.hours-input input {
+  flex: 1;
+}
+
+.hours-input span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.difficulty-options {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+}
+
+.difficulty-button {
+  padding: 10px;
+
+  border: 1px solid var(--border);
+  border-radius: 8px;
+
+  background: transparent;
+  color: var(--muted);
+
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.difficulty-button:hover {
+  border-color: #aaa69b;
+}
+
+.difficulty-button.selected {
+  background: var(--text);
+  border-color: var(--text);
+  color: white;
+}
+.ai-setting {
+  margin-top: 6px;
+  padding: 16px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+
+  background: #f5f2ea;
+  border-radius: 12px;
+}
+
+.ai-setting strong {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.ai-setting p {
+  max-width: 400px;
+  margin: 4px 0 0;
+
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.toggle {
+  position: relative;
+
+  width: 40px;
+  height: 23px;
+
+  flex-shrink: 0;
+
+  border: 0;
+  border-radius: 999px;
+
+  background: #cbc9c2;
+  cursor: pointer;
+}
+
+.toggle span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+
+  width: 17px;
+  height: 17px;
+
+  background: white;
+  border-radius: 50%;
+
+  transition: transform 180ms ease;
+}
+
+.toggle.on {
+  background: var(--text);
+}
+
+.toggle.on span {
+  transform: translateX(17px);
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+
+  margin-top: 24px;
+}
+
+.cancel-button,
+.save-button {
+  padding: 10px 14px;
+
+  border-radius: 9px;
+
+  font-size: 11px;
+  font-weight: 650;
+
+  cursor: pointer;
+}
+
+.cancel-button {
+  border: 1px solid var(--border);
+
+  background: transparent;
+  color: var(--muted);
+}
+
+.save-button {
+  border: 0;
+
+  background: var(--text);
+  color: white;
+}
