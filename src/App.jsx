@@ -1,4 +1,5 @@
-import Sidebar from './components/sidebar'
+import TopNav from './components/topNav'
+import IntelligencePanel from './components/intelligencePanel'
 import EnergyCheckIn from './components/energy'
 import TodayCard from './components/todayCard'
 import './App.css'
@@ -6,20 +7,33 @@ import './App.css'
 function App() {
   return (
     <div className="app">
-      <Sidebar />
+      <TopNav />
 
       <main className="main-content">
-        <p className="eyebrow">SUNDAY, SEPTEMBER 28</p>
+        <div className="dashboard-heading">
+          <div>
+            <h1>Good afternoon.</h1>
+          
+            <p className="subtitle">
+              3 tasks · 2h 15m planned · looking manageable.
+            </p>
+          </div>
 
-        <h1>Good afternoon.</h1>
+          <div className="dashboard-date">
+            <span>Sunday</span>
+            <strong>September 28</strong>
+          </div>
+        </div>
 
-        <p className="subtitle">
-          Here's what your day looks like.
-        </p>
+        <div className="dashboard-layout">
 
-        <div className="dashboard-grid">
+        <div className="dashboard-primary">
           <TodayCard />
           <EnergyCheckIn />
+        </div>
+
+        <IntelligencePanel />
+
         </div>
       </main>
     </div>
