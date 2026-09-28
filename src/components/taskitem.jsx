@@ -1,14 +1,11 @@
-function TaskItem({ task, onToggle }) {
+function TaskItem({ task, onOpen }) {
   return (
-    <div className="task-item">
-      <input
-        type="checkbox"
-        checked={task.completed}
-        onChange={() => onToggle(task.id)}
-      />
-
+    <button
+      className="task-item commitment-row"
+      onClick={onOpen}
+    >
       <div className="task-info">
-        <p className={`task-title ${task.completed ? 'completed' : ''}`}>
+        <p className="task-title">
           {task.title}
         </p>
 
@@ -21,10 +18,13 @@ function TaskItem({ task, onToggle }) {
         {task.type}
       </span>
 
-      <span className="task-duration">
-        {task.duration}
-      </span>
-    </div>
+      <div className="task-progress">
+        <strong>{task.progress}%</strong>
+        <span>{task.due}</span>
+      </div>
+
+      <span className="row-arrow">→</span>
+    </button>
   )
 }
 
