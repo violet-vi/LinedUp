@@ -1,4 +1,5 @@
 import Sidebar from './components/sidebar'
+import EnergyCheckIn from './components/energy'
 import TodayCard from './components/todayCard'
 import './App.css'
 
@@ -18,6 +19,7 @@ function App() {
 
         <div className="dashboard-grid">
           <TodayCard />
+          <EnergyCheckIn />
         </div>
       </main>
     </div>

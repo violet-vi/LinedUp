@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import TaskItem from './taskitem'
 
 function TodayCard() {
-  const tasks = [
+  const [tasks, setTasks] = useState([
     {
       id: 1,
       title: 'DSA Assignment',
@@ -26,7 +27,22 @@ function TodayCard() {
       duration: '30m',
       completed: true,
     },
-  ]
+  ])
+
+  const toggleTask = (id) => {
+    setTasks(
+      tasks.map((task) =>
+        task.id === id
+          ? { ...task, completed: !task.completed }
+          : task
+      )
+    )
+  }
+  const completedCount = tasks.filter((task) => task.completed).length
+
+  const progress = Math.round(
+    (completedCount / tasks.length) * 100
+  )
 
   return (
     <section className="today-card">
@@ -38,12 +54,26 @@ function TodayCard() {
 
         <span className="total-time">2h 15m</span>
       </div>
+      <div className="today-progress">
+
+      <div className="progress-info">
+          <span>Daily progress</span>
+          <strong>{progress}%</strong>
+        </div>    
+        <div className="progress-track">
+          <div
+            className="progress-fill"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
 
       <div className="task-list">
         {tasks.map((task) => (
           <TaskItem
             key={task.id}
             task={task}
+            onToggle={toggleTask}
           />
         ))}
       </div>
