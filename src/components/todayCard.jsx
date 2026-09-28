@@ -1,32 +1,9 @@
 import TaskItem from './taskitem'
 
-function TodayCard({ onOpenCommitment }) {
-  const commitments = [
-    {
-      id: 1,
-      title: 'DSA Assignment',
-      detail: 'Questions 3–4 · 1h scheduled today',
-      type: 'assignment',
-      progress: 68,
-      due: 'Due Sep 30',
-    },
-    {
-      id: 2,
-      title: 'Physics Midterm',
-      detail: 'Unit 2 · 45m scheduled today',
-      type: 'study',
-      progress: 32,
-      due: '3 days left',
-    },
-    {
-      id: 3,
-      title: 'Microsoft Internship',
-      detail: 'Résumé · 30m scheduled today',
-      type: 'career',
-      progress: 25,
-      due: 'Due Oct 3',
-    },
-  ]
+function TodayCard({
+  commitments,
+  onOpenCommitment,
+}) {
 
   return (
     <section className="today-card">
