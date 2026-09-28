@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import Calendar from './pages/calendar'
 import AddCommitment from './components/addCommitment'
 import TopNav from './components/topNav'
 import IntelligencePanel from './components/intelligencePanel'
@@ -13,7 +12,6 @@ import './App.css'
 function App() {
   const [selectedCommitment, setSelectedCommitment] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
-  const [page, setPage] = useState('today')
   const [commitments, setCommitments] = useState([
    {
      id: 1,
@@ -83,56 +81,51 @@ function App() {
 
   return (
     <div className="app">
-      <TopNav 
-        currentPage={page}
-        onNavigate={setPage}
-        onAdd={() => setShowAdd(true)} />
+      <TopNav onAdd={() => setShowAdd(true)} />
 
       <main className="main-content">
 
-      {selectedCommitment ? (
-        <CommitmentDetail
-          onBack={() => setSelectedCommitment(null)}
-        />
-      ) : (
-        <>
-          {page === 'today' && (
-            <>
-              <div className="dashboard-heading">
-                <div>
-                  <h1>Good afternoon.</h1>
-          
-                  <p className="subtitle">
-                    {commitments.length} commitments · looking manageable.
-                  </p>
-                </div>
-          
-                <div className="dashboard-date">
-                  <span>Tuesday</span>
-                  <strong>September 29</strong>
-                </div>
+        {selectedCommitment ? (
+
+          <CommitmentDetail
+            onBack={() => setSelectedCommitment(null)}
+          />
+
+        ) : (
+
+          <>
+            <div className="dashboard-heading">
+              <div>
+                <h1>Good afternoon.</h1>
+
+                <p className="subtitle">
+                  3 tasks · 2h 15m planned · looking manageable.
+                </p>
               </div>
-          
-              <div className="dashboard-layout">
-                <div className="dashboard-primary">
-                  <TodayCard
-                    commitments={commitments}
-                    onOpenCommitment={setSelectedCommitment}
-                  />
-      
-                  <EnergyCheckIn />
-                </div>
-          
-                <IntelligencePanel />
+
+              <div className="dashboard-date">
+                <span>Sunday</span>
+                <strong>September 28</strong>
               </div>
-            </>
-          )}
-      
-          {page === 'calendar' && (
-            <Calendar />
-          )}
-        </>
-      )}
+            </div>
+
+            <div className="dashboard-layout">
+
+              <div className="dashboard-primary">
+                <TodayCard
+                  commitments={commitments}
+                  onOpenCommitment={setSelectedCommitment}
+                />
+
+                <EnergyCheckIn />
+              </div>
+
+              <IntelligencePanel />
+
+            </div>
+          </>
+
+        )}
 
       </main>
 
