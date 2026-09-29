@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import createSchedule from './utils/scheduler'
 import Calendar from './pages/calendar'
 import AddCommitment from './components/addCommitment'
 import TopNav from './components/topNav'
@@ -12,6 +13,7 @@ import './App.css'
 
 function App() {
   const [selectedCommitment, setSelectedCommitment] = useState(null)
+  const [calendarEvents, setCalendarEvents] = useState([])
   const [showAdd, setShowAdd] = useState(false)
   const [page, setPage] = useState('today')
   const [commitments, setCommitments] = useState([
@@ -42,6 +44,7 @@ function App() {
   ])
   const addCommitment = (form) => {
     const newCommitment = {
+      
       id: Date.now(),
 
       title: form.title,
@@ -71,14 +74,33 @@ function App() {
           }
         : null,
     }
+    console.log('New commitment:', newCommitment)
+    const sessions = createSchedule(newCommitment)
+
+    console.log('Generated sessions:', sessions)
 
     setCommitments([
       ...commitments,
       newCommitment,
     ])
+    setShowAdd(false)    
+  }
+
+  const addCalendarEvent = (event) => {
+    const newEvent = {
+      id: Date.now(),
+      ...event,
+    }
+
+    setCalendarEvents([
+      ...calendarEvents,
+      newEvent,
+    ])
 
     setShowAdd(false)
+    console.log('Calendar event:', newEvent)
   }
+  
 
 
   return (
@@ -119,7 +141,7 @@ function App() {
                     commitments={commitments}
                     onOpenCommitment={setSelectedCommitment}
                   />
-      
+
                   <EnergyCheckIn />
                 </div>
           
@@ -127,19 +149,20 @@ function App() {
               </div>
             </>
           )}
-      
+
           {page === 'calendar' && (
-            <Calendar />
+            <Calendar events={calendarEvents} />
           )}
         </>
       )}
 
       </main>
-
       {showAdd && (
         <AddCommitment
           onClose={() => setShowAdd(false)}
           onSave={addCommitment}
+          onSaveEvent={addCalendarEvent}
+
         />
       )}
 
