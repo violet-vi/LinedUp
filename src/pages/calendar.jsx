@@ -48,7 +48,7 @@ function formatTime(time) {
 }
 
 function CalendarEvent({ event }) {
-  const firstHour = 8
+  const firstHour = 5
   const hourHeight = 54
 
   const startHour = timeToDecimal(event.start)
