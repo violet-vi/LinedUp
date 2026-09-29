@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import createSchedule from './utils/scheduler'
+import Pressure from './pages/pressure'
 import Calendar from './pages/calendar'
 import AddCommitment from './components/addCommitment'
 import TopNav from './components/topNav'
@@ -107,6 +108,83 @@ function App() {
     setShowAdd(false)
     console.log('Calendar event:', newEvent)
   }
+    const updateCommitment = (updatedCommitment) => {
+  setCommitments((current) =>
+    current.map((commitment) =>
+      commitment.id === updatedCommitment.id
+        ? updatedCommitment
+        : commitment
+    )
+  )
+}
+
+const deleteCommitment = (commitmentId) => {
+  setCommitments((current) =>
+    current.filter(
+      (commitment) => commitment.id !== commitmentId
+    )
+  )
+
+  setScheduledSessions((current) =>
+    current.filter(
+      (session) =>
+        session.commitmentId !== commitmentId
+    )
+  )
+
+  setSelectedCommitment(null)
+}
+
+const toggleCommitmentComplete = (commitmentId) => {
+  setCommitments((current) =>
+    current.map((commitment) =>
+      commitment.id === commitmentId
+        ? {
+            ...commitment,
+            completed: !commitment.completed,
+            progress: commitment.completed ? 0 : 100,
+          }
+        : commitment
+    )
+  )
+}
+
+const updateSession = (sessionId, changes) => {
+  setScheduledSessions((current) =>
+    current.map((session) =>
+      session.id === sessionId
+        ? { ...session, ...changes }
+        : session
+    )
+  )
+}
+
+const deleteSession = (sessionId) => {
+  setScheduledSessions((current) =>
+    current.filter(
+      (session) => session.id !== sessionId
+    )
+  )
+}
+
+const updateCalendarEvent = (eventId, changes) => {
+  setCalendarEvents((current) =>
+    current.map((event) =>
+      event.id === eventId
+        ? { ...event, ...changes }
+        : event
+    )
+  )
+}
+
+const deleteCalendarEvent = (eventId) => {
+  setCalendarEvents((current) =>
+    current.filter(
+      (event) => event.id !== eventId
+    )
+  )
+}
+
   
 
 
@@ -121,10 +199,22 @@ function App() {
       <main className="main-content">
 
       {selectedCommitment ? (
-        <CommitmentDetail
-          onBack={() => setSelectedCommitment(null)}
-        />
-      ) : (
+          <CommitmentDetail
+            commitment={commitments.find(
+              (item) => item.id === selectedCommitment
+            )}
+            sessions={scheduledSessions.filter(
+              (session) =>
+                session.commitmentId === selectedCommitment
+            )}
+            onBack={() => setSelectedCommitment(null)}
+            onUpdate={updateCommitment}
+            onDelete={deleteCommitment}
+            onToggleComplete={toggleCommitmentComplete}
+            onUpdateSession={updateSession}
+            onDeleteSession={deleteSession}
+          />
+        ) : (
         <>
           {page === 'today' && (
             <>
@@ -162,7 +252,14 @@ function App() {
             <Calendar
               events={calendarEvents}
               sessions={scheduledSessions}
+              onUpdateEvent={updateCalendarEvent}
+              onDeleteEvent={deleteCalendarEvent}
+              onUpdateSession={updateSession}
+              onDeleteSession={deleteSession}
             />
+          )}
+          {page === 'pressure' && (
+            <Pressure commitments={commitments} />
           )}
         </>
       )}
