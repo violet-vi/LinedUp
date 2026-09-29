@@ -109,3 +109,31 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+
+.recurrence-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+
+  margin-bottom: 17px;
+}
+
+.recurrence-selector button {
+  padding: 9px;
+
+  border: 1px solid var(--border);
+  border-radius: 8px;
+
+  background: transparent;
+  color: var(--muted);
+
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.recurrence-selector button.selected {
+  background: var(--text);
+  border-color: var(--text);
+  color: white;
+}

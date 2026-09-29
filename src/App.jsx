@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import createSchedule from './utils/scheduler'
+import Calendar from './pages/calendar'
 import AddCommitment from './components/addCommitment'
 import TopNav from './components/topNav'
 import IntelligencePanel from './components/intelligencePanel'
@@ -10,7 +12,10 @@ import TodayCard from './components/todayCard'
 import './App.css'
 
 function App() {
+  const [page, setPage] = useState('today')
+  const [scheduledSessions, setScheduledSessions] = useState([])
   const [selectedCommitment, setSelectedCommitment] = useState(null)
+  const [calendarEvents, setCalendarEvents] = useState([])
   const [showAdd, setShowAdd] = useState(false)
   const [commitments, setCommitments] = useState([
    {
@@ -40,6 +45,7 @@ function App() {
   ])
   const addCommitment = (form) => {
     const newCommitment = {
+      
       id: Date.now(),
 
       title: form.title,
@@ -69,70 +75,105 @@ function App() {
           }
         : null,
     }
+    console.log('New commitment:', newCommitment)
+    const sessions = createSchedule(newCommitment,
+      calendarEvents,
+      scheduledSessions)
+
+    console.log('Generated sessions:', sessions)
+    setScheduledSessions((current) => [
+      ...current,
+      ...sessions,
+    ])
 
     setCommitments([
       ...commitments,
       newCommitment,
     ])
+    setShowAdd(false)    
+  }
+
+  const addCalendarEvent = (event) => {
+    const newEvent = {
+      id: Date.now(),
+      ...event,
+    }
+
+    setCalendarEvents([
+      ...calendarEvents,
+      newEvent,
+    ])
 
     setShowAdd(false)
+    console.log('Calendar event:', newEvent)
   }
+  
 
 
   return (
     <div className="app">
-      <TopNav onAdd={() => setShowAdd(true)} />
+      <TopNav
+        currentPage={page}
+        onNavigate={setPage}
+        onAdd={() => setShowAdd(true)}
+      />
 
       <main className="main-content">
 
-        {selectedCommitment ? (
-
-          <CommitmentDetail
-            onBack={() => setSelectedCommitment(null)}
-          />
-
-        ) : (
-
-          <>
-            <div className="dashboard-heading">
-              <div>
-                <h1>Good afternoon.</h1>
-
-                <p className="subtitle">
-                  3 tasks · 2h 15m planned · looking manageable.
-                </p>
+      {selectedCommitment ? (
+        <CommitmentDetail
+          onBack={() => setSelectedCommitment(null)}
+        />
+      ) : (
+        <>
+          {page === 'today' && (
+            <>
+              <div className="dashboard-heading">
+                <div>
+                  <h1>Good afternoon.</h1>
+          
+                  <p className="subtitle">
+                    {commitments.length} commitments · looking manageable.
+                  </p>
+                </div>
+          
+                <div className="dashboard-date">
+                  <span>Tuesday</span>
+                  <strong>September 29</strong>
+                </div>
               </div>
+          
+              <div className="dashboard-layout">
+                <div className="dashboard-primary">
+                  <TodayCard
+                    commitments={commitments}
+                    onOpenCommitment={setSelectedCommitment}
+                  />
 
-              <div className="dashboard-date">
-                <span>Sunday</span>
-                <strong>September 28</strong>
+                  <EnergyCheckIn />
+                </div>
+          
+                <IntelligencePanel />
               </div>
-            </div>
+            </>
+          )}
 
-            <div className="dashboard-layout">
-
-              <div className="dashboard-primary">
-                <TodayCard
-                  commitments={commitments}
-                  onOpenCommitment={setSelectedCommitment}
-                />
-
-                <EnergyCheckIn />
-              </div>
-
-              <IntelligencePanel />
-
-            </div>
-          </>
-
-        )}
+          {page === 'calendar' && (
+            <Calendar
+              events={calendarEvents}
+              sessions={scheduledSessions}
+            />
+          )}
+        </>
+      )}
 
       </main>
-
       {showAdd && (
         <AddCommitment
           onClose={() => setShowAdd(false)}
           onSave={addCommitment}
+          onSaveEvent={addCalendarEvent}
+
         />
       )}
 
