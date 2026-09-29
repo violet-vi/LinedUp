@@ -3,6 +3,9 @@ import { useState } from 'react'
 
 
 const times = [
+  '5 AM',
+  '6 AM',
+  '7 AM',
   '8 AM',
   '9 AM',
   '10 AM',
@@ -16,6 +19,9 @@ const times = [
   '6 PM',
   '7 PM',
   '8 PM',
+  '9 PM',
+  '10 PM',
+  '11 PM',
 ]
 
 function timeToDecimal(time) {

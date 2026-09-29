@@ -133,13 +133,13 @@ function getPreferredRange(preferredTime) {
     case 'evening':
       return {
         start: 17 * 60,
-        end: 22 * 60,
+        end: 23 * 60,
       }
 
     default:
       return {
-        start: 8 * 60,
-        end: 22 * 60,
+        start: 5 * 60,
+        end: 24 * 60,
       }
   }
 }

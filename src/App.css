@@ -1418,7 +1418,7 @@ h1 {
 .calendar-times,
 .calendar-day-column {
   display: grid;
-  grid-template-rows: repeat(13, 54px);
+  grid-template-rows: repeat(19, 54px);
 }
 
 .calendar-slot {
