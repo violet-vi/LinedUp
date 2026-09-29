@@ -76,7 +76,9 @@ function App() {
         : null,
     }
     console.log('New commitment:', newCommitment)
-    const sessions = createSchedule(newCommitment)
+    const sessions = createSchedule(newCommitment,
+      calendarEvents,
+      scheduledSessions)
 
     console.log('Generated sessions:', sessions)
     setScheduledSessions((current) => [
