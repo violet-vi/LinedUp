@@ -16,7 +16,6 @@ function App() {
   const [selectedCommitment, setSelectedCommitment] = useState(null)
   const [calendarEvents, setCalendarEvents] = useState([])
   const [showAdd, setShowAdd] = useState(false)
-  const [page, setPage] = useState('today')
   const [commitments, setCommitments] = useState([
    {
      id: 1,
@@ -112,10 +111,7 @@ function App() {
 
   return (
     <div className="app">
-      <TopNav 
-        currentPage={page}
-        onNavigate={setPage}
-        onAdd={() => setShowAdd(true)} />
+      <TopNav onAdd={() => setShowAdd(true)} />
 
       <main className="main-content">
 
