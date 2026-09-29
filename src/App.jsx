@@ -12,6 +12,7 @@ import TodayCard from './components/todayCard'
 import './App.css'
 
 function App() {
+  const [page, setPage] = useState('today')
   const [scheduledSessions, setScheduledSessions] = useState([])
   const [selectedCommitment, setSelectedCommitment] = useState(null)
   const [calendarEvents, setCalendarEvents] = useState([])
@@ -111,7 +112,11 @@ function App() {
 
   return (
     <div className="app">
-      <TopNav onAdd={() => setShowAdd(true)} />
+      <TopNav
+        currentPage={page}
+        onNavigate={setPage}
+        onAdd={() => setShowAdd(true)}
+      />
 
       <main className="main-content">
 
