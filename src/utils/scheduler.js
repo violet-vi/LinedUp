@@ -1,98 +1,97 @@
-const availability = [
-  {
-    day: 0,
-    windows: [
-      { start: 16, end: 20 },
-    ],
-  },
-  {
-    day: 1,
-    windows: [
-      { start: 15, end: 19 },
-    ],
-  },
-  {
-    day: 2,
-    windows: [
-      { start: 16, end: 21 },
-    ],
-  },
-  {
-    day: 3,
-    windows: [
-      { start: 17, end: 20 },
-    ],
-  },
-  {
-    day: 4,
-    windows: [
-      { start: 14, end: 19 },
-    ],
-  },
-]
+function formatDateKey(date) {
+  const year = date.getFullYear()
 
-const blockedTimes = [
-  {
-    day: 2,
-    start: 18,
-    end: 20,
-    reason: 'Me Time',
-  },
-]
+  const month = String(
+    date.getMonth() + 1
+  ).padStart(2, '0')
+
+  const day = String(
+    date.getDate()
+  ).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+
+function getPreferredStart(preferredTime) {
+  if (preferredTime === 'morning') {
+    return '09:00'
+  }
+
+  if (preferredTime === 'afternoon') {
+    return '14:00'
+  }
+
+  if (preferredTime === 'evening') {
+    return '18:00'
+  }
+
+  return '16:00'
+}
+
 
 function createSchedule(commitment) {
   let remainingMinutes =
     Number(commitment.estimatedHours) * 60
 
-  if (!remainingMinutes || !commitment.deadline) {
+  if (
+    !remainingMinutes ||
+    !commitment.deadline
+  ) {
     return []
   }
+
+  const deadline = new Date(
+    `${commitment.deadline}T23:59:59`
+  )
+
+  const today = new Date()
+
+  today.setHours(0, 0, 0, 0)
 
   const sessions = []
 
   const maxSessionMinutes = 90
 
-  for (const dayAvailability of availability) {
-    if (remainingMinutes <= 0) {
-      break
-    }
+  const currentDate = new Date(today)
 
-    for (const window of dayAvailability.windows) {
-      if (remainingMinutes <= 0) {
-        break
-      }
+  while (
+    remainingMinutes > 0 &&
+    currentDate <= deadline
+  ) {
+    const sessionMinutes = Math.min(
+      maxSessionMinutes,
+      remainingMinutes
+    )
 
-      const availableMinutes =
-        (window.end - window.start) * 60
+    sessions.push({
+      id: `${commitment.id}-${formatDateKey(currentDate)}`,
 
-      const sessionMinutes = Math.min(
-        maxSessionMinutes,
-        availableMinutes,
-        remainingMinutes
-      )
+      commitmentId: commitment.id,
 
-      sessions.push({
-        id: `${commitment.id}-${dayAvailability.day}-${window.start}`,
+      title: commitment.title,
+      type: commitment.type,
 
-        commitmentId: commitment.id,
+      date: formatDateKey(currentDate),
 
-        title: commitment.title,
-        type: commitment.type,
+      start: getPreferredStart(
+        commitment.preferredTime
+      ),
 
-        day: dayAvailability.day,
+      durationMinutes: sessionMinutes,
 
-        startHour: window.start,
+      estimatedMinutes: sessionMinutes,
+      completedMinutes: 0,
 
-        duration: sessionMinutes / 60,
+      kind: 'session',
+      flexible: true,
+    })
 
-        estimatedMinutes: sessionMinutes,
-        completedMinutes: 0,
+    remainingMinutes -= sessionMinutes
 
-        flexible: true,
-      })
-
-      remainingMinutes -= sessionMinutes
-    }
+    currentDate.setDate(
+      currentDate.getDate() + 1
+    )
   }
 
   return sessions

@@ -46,7 +46,16 @@ function CalendarEvent({ event }) {
   const hourHeight = 54
 
   const startHour = timeToDecimal(event.start)
-  const endHour = timeToDecimal(event.end)
+
+  let endHour
+
+  if (event.end) {
+    endHour = timeToDecimal(event.end)
+  } else {
+    endHour =
+      startHour +
+      event.durationMinutes / 60
+  }
 
   const top =
     (startHour - firstHour) * hourHeight
@@ -66,12 +75,14 @@ function CalendarEvent({ event }) {
 
       <span>
         {formatTime(event.start)}
-        {' – '}
-        {formatTime(event.end)}
       </span>
 
       {event.kind === 'protected' && (
-        <span>Protected</span>
+        <span>Protected 🔒</span>
+      )}
+
+      {event.kind === 'session' && (
+        <span>Planned by LinedUp</span>
       )}
     </button>
   )
@@ -109,7 +120,15 @@ function getWeekDays(weekOffset) {
   })
 }
 
-function Calendar({ events = [] }) {
+function formatDateKey(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+function Calendar({ events = [], sessions = [], }) {
   const [weekOffset, setWeekOffset] = useState(0)
 
   const days = getWeekDays(weekOffset)
@@ -214,34 +233,64 @@ function Calendar({ events = [] }) {
             ))}
           </div>
 
-          {days.map((day, dayIndex) => (
-            <div
-              className="calendar-day-column"
-              key={day.toISOString()}
-            >
-
-              {times.map((time) => (
-                <div
-                  className="calendar-slot"
-                  key={`${day.name}-${time}`}
-                />
-              ))}
-
-              <div className="calendar-events">
-                {events
-                  .filter((event) =>
-                    event.days.includes(dayIndex)
-                  )
-                  .map((event) => (
+          {days.map((day, dayIndex) => {
+            const dateKey = formatDateKey(day)
+                    
+            const dayEvents = events.filter((event) => {
+              if (event.recurrence === 'weekly') {
+                return event.days.includes(dayIndex)
+              }
+            
+              if (event.recurrence === 'once') {
+                return event.date === dateKey
+              }
+            
+              // Protected time currently repeats weekly
+              if (event.kind === 'protected') {
+                return event.days.includes(dayIndex)
+              }
+            
+              return false
+            })
+          
+            const daySessions = sessions.filter(
+              (session) => session.date === dateKey
+            )
+          
+            return (
+              <div
+                className="calendar-day-column"
+                key={dateKey}
+              >
+              
+                {times.map((time) => (
+                  <div
+                    className="calendar-slot"
+                    key={`${dateKey}-${time}`}
+                  />
+                ))}
+          
+                <div className="calendar-events">
+              
+                  {dayEvents.map((event) => (
                     <CalendarEvent
-                      key={`${event.id}-${dayIndex}`}
+                      key={`${event.id}-${dateKey}`}
                       event={event}
                     />
                   ))}
+          
+                  {daySessions.map((session) => (
+                    <CalendarEvent
+                      key={session.id}
+                      event={session}
+                    />
+                  ))}
+          
+                </div>
+                
               </div>
-
-            </div>
-          ))}
+            )
+          })}
 
         </div>
 

@@ -12,6 +12,7 @@ import TodayCard from './components/todayCard'
 import './App.css'
 
 function App() {
+  const [scheduledSessions, setScheduledSessions] = useState([])
   const [selectedCommitment, setSelectedCommitment] = useState(null)
   const [calendarEvents, setCalendarEvents] = useState([])
   const [showAdd, setShowAdd] = useState(false)
@@ -78,6 +79,10 @@ function App() {
     const sessions = createSchedule(newCommitment)
 
     console.log('Generated sessions:', sessions)
+    setScheduledSessions((current) => [
+      ...current,
+      ...sessions,
+    ])
 
     setCommitments([
       ...commitments,
@@ -151,7 +156,10 @@ function App() {
           )}
 
           {page === 'calendar' && (
-            <Calendar events={calendarEvents} />
+            <Calendar
+              events={calendarEvents}
+              sessions={scheduledSessions}
+            />
           )}
         </>
       )}

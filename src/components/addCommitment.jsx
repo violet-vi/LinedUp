@@ -6,8 +6,11 @@ function AddCommitment({ onClose, onSave, onSaveEvent, }) {
       title: '',
       start: '',
       end: '',
+      recurrence: 'once',
+      date: '',
       days: [],
     })
+
 
     const [protectedForm, setProtectedForm] = useState({
       title: '',
@@ -60,17 +63,30 @@ function AddCommitment({ onClose, onSave, onSaveEvent, }) {
         if (
           !eventForm.title.trim() ||
           !eventForm.start ||
-          !eventForm.end ||
+          !eventForm.end
+        ) {
+          return
+        }
+      
+        if (
+          eventForm.recurrence === 'once' &&
+          !eventForm.date
+        ) {
+          return
+        }
+      
+        if (
+          eventForm.recurrence === 'weekly' &&
           eventForm.days.length === 0
         ) {
           return
         }
-
+      
         onSaveEvent({
           ...eventForm,
           kind: 'fixed',
         })
-
+      
         return
       }
 
@@ -292,37 +308,6 @@ function AddCommitment({ onClose, onSave, onSaveEvent, }) {
               </div>
               
               {form.aiEnabled && (
-                <div className="ai-upload">
-                  <div>
-                    <strong>Have the actual brief?</strong>
-                    <p>
-                      PDF analysis is coming next. For now, paste its
-                      contents above.
-                    </p>
-                  </div>
-
-                  <button type="button" disabled>
-                    Upload PDF
-                  </button>
-                </div>
-              )}
-
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="cancel-button"
-                  onClick={onClose}
-                >
-                  Cancel
-                </button>
-          
-                <button type="submit" className="save-button">
-                  {addMode === 'commitment' && 'Add commitment →'}
-                  {addMode === 'commitment' && 'Add commitment →'}
-                  {addMode === 'protected' && 'Protect time →'}
-                </button>
-              </div>
-              {form.aiEnabled && (
                   <div className="ai-upload">
                     <div>
                       <strong>Have the actual brief?</strong>
@@ -340,10 +325,17 @@ function AddCommitment({ onClose, onSave, onSaveEvent, }) {
 
               </>
             )}
-            
+
+
+        
+        
+        {/* ++++++++ E V E N T +++++++ */}
+
+
+
         {addMode === 'event' && (
           <div className="event-form">
-
+          
             <div className="form-group">
               <label>Event name</label>
 
@@ -359,11 +351,68 @@ function AddCommitment({ onClose, onSave, onSaveEvent, }) {
                 }
               />
             </div>
+              
+            <div className="form-group">
+              <label>Schedule</label>
+              
+              <div className="recurrence-selector">
+                <button
+                  type="button"
+                  className={
+                    eventForm.recurrence === 'once'
+                      ? 'selected'
+                      : ''
+                  }
+                  onClick={() =>
+                    setEventForm({
+                      ...eventForm,
+                      recurrence: 'once',
+                    })
+                  }
+                >
+                  One time
+                </button>
+                
+                <button
+                  type="button"
+                  className={
+                    eventForm.recurrence === 'weekly'
+                      ? 'selected'
+                      : ''
+                  }
+                  onClick={() =>
+                    setEventForm({
+                      ...eventForm,
+                      recurrence: 'weekly',
+                    })
+                  }
+                >
+                  Repeats weekly
+                </button>
+              </div>
+            </div>
+                
+            {eventForm.recurrence === 'once' && (
+              <div className="form-group">
+                <label>Date</label>
+            
+                <input
+                  type="date"
+                  value={eventForm.date}
+                  onChange={(event) =>
+                    setEventForm({
+                      ...eventForm,
+                      date: event.target.value,
+                    })
+                  }
+                />
+              </div>
+            )}
 
             <div className="form-row">
               <div className="form-group">
                 <label>Start</label>
-
+          
                 <input
                   type="time"
                   value={eventForm.start}
@@ -375,10 +424,10 @@ function AddCommitment({ onClose, onSave, onSaveEvent, }) {
                   }
                 />
               </div>
-
+                
               <div className="form-group">
                 <label>End</label>
-
+                
                 <input
                   type="time"
                   value={eventForm.end}
@@ -391,40 +440,48 @@ function AddCommitment({ onClose, onSave, onSaveEvent, }) {
                 />
               </div>
             </div>
-
-            <div className="form-group">
-              <label>Repeats on</label>
-
-              <div className="weekday-selector">
-                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(
-                  (day, index) => (
-                    <button
-                      type="button"
-                      key={index}
-                      className={
-                        eventForm.days.includes(index)
-                          ? 'selected'
-                          : ''
-                      }
-                      onClick={() =>
-                        toggleDay(
-                          index,
-                          eventForm,
-                          setEventForm
-                        )
-                      }
-                    >
-                      {day}
-                    </button>
-                  )
-                )}
+                
+            {eventForm.recurrence === 'weekly' && (
+              <div className="form-group">
+                <label>Repeats on</label>
+            
+                <div className="weekday-selector">
+                  {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(
+                    (day, index) => (
+                      <button
+                        type="button"
+                        key={index}
+                        className={
+                          eventForm.days.includes(index)
+                            ? 'selected'
+                            : ''
+                        }
+                        onClick={() =>
+                          toggleDay(
+                            index,
+                            eventForm,
+                            setEventForm
+                          )
+                        }
+                      >
+                        {day}
+                      </button>
+                    )
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
           </div>
         )}
     
     
+
+    {/* ++++++++   P R O T E C T E D     T I M E   +++++++ */}
+
+
+
+
     {addMode === 'protected' && (
       <div className="protected-form">
     
