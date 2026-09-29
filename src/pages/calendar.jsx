@@ -47,7 +47,7 @@ function formatTime(time) {
   return `${displayHour}:${minute} ${period}`
 }
 
-function CalendarEvent({ event }) {
+function CalendarEvent({ event,onClick, }) {
   const firstHour = 5
   const hourHeight = 54
 
@@ -69,9 +69,87 @@ function CalendarEvent({ event }) {
   const height =
     (endHour - startHour) * hourHeight
 
+  const updateCommitment = (updatedCommitment) => {
+    setCommitments((current) =>
+      current.map((commitment) =>
+        commitment.id === updatedCommitment.id
+          ? updatedCommitment
+          : commitment
+      )
+    )
+  }
+
+  const deleteCommitment = (commitmentId) => {
+    setCommitments((current) =>
+      current.filter(
+        (commitment) => commitment.id !== commitmentId
+      )
+    )
+
+    setScheduledSessions((current) =>
+      current.filter(
+        (session) =>
+          session.commitmentId !== commitmentId
+      )
+    )
+
+    setSelectedCommitment(null)
+  }
+
+  const toggleCommitmentComplete = (commitmentId) => {
+    setCommitments((current) =>
+      current.map((commitment) =>
+        commitment.id === commitmentId
+          ? {
+              ...commitment,
+              completed: !commitment.completed,
+              progress: commitment.completed ? 0 : 100,
+            }
+          : commitment
+      )
+    )
+  }
+
+  const updateSession = (sessionId, changes) => {
+    setScheduledSessions((current) =>
+      current.map((session) =>
+        session.id === sessionId
+          ? { ...session, ...changes }
+          : session
+      )
+    )
+  }
+
+  const deleteSession = (sessionId) => {
+    setScheduledSessions((current) =>
+      current.filter(
+        (session) => session.id !== sessionId
+      )
+    )
+  }
+
+  const updateCalendarEvent = (eventId, changes) => {
+    setCalendarEvents((current) =>
+      current.map((event) =>
+        event.id === eventId
+          ? { ...event, ...changes }
+          : event
+      )
+    )
+  }
+
+  const deleteCalendarEvent = (eventId) => {
+    setCalendarEvents((current) =>
+      current.filter(
+        (event) => event.id !== eventId
+      )
+    )
+  }
+
   return (
     <button
       className={`calendar-event ${event.kind}`}
+      onClick={onClick}
       style={{
         top: `${top}px`,
         height: `${height}px`,
@@ -134,7 +212,14 @@ function formatDateKey(date) {
   return `${year}-${month}-${day}`
 }
 
-function Calendar({ events = [], sessions = [], }) {
+function Calendar({ events = [], sessions = [], 
+  onUpdateEvent,
+  onDeleteEvent,
+  onUpdateSession,
+  onDeleteSession,}) {
+
+  const [selectedBlock, setSelectedBlock] =
+    useState(null)
   const [weekOffset, setWeekOffset] = useState(0)
 
   const days = getWeekDays(weekOffset)
@@ -282,6 +367,12 @@ function Calendar({ events = [], sessions = [], }) {
                     <CalendarEvent
                       key={`${event.id}-${dateKey}`}
                       event={event}
+                      onClick={() =>
+                        setSelectedBlock({
+                          ...session,
+                          blockType: 'session',
+                        })
+                      }
                     />
                   ))}
           
@@ -289,6 +380,12 @@ function Calendar({ events = [], sessions = [], }) {
                     <CalendarEvent
                       key={session.id}
                       event={session}
+                      onClick={() =>
+                        setSelectedBlock({
+                          ...session,
+                          blockType: 'session',
+                        })
+                      }
                     />
                   ))}
           
@@ -301,6 +398,183 @@ function Calendar({ events = [], sessions = [], }) {
         </div>
 
       </div>
+      {selectedBlock && (
+        <div className="modal-backdrop">
+        
+          <form
+            className="add-modal"
+            onSubmit={(event) => {
+              event.preventDefault()
+            
+              if (
+                selectedBlock.blockType === 'event'
+              ) {
+                onUpdateEvent(
+                  selectedBlock.id,
+                  {
+                    title: selectedBlock.title,
+                    start: selectedBlock.start,
+                    end: selectedBlock.end,
+                  }
+                )
+              } else {
+                onUpdateSession(
+                  selectedBlock.id,
+                  {
+                    date: selectedBlock.date,
+                    start: selectedBlock.start,
+                  }
+                )
+              }
+            
+              setSelectedBlock(null)
+            }}
+          >
+          
+            <div className="modal-header">
+              <div>
+                <p className="section-label">
+                  {selectedBlock.kind === 'protected'
+                    ? 'PROTECTED TIME'
+                    : selectedBlock.kind === 'session'
+                      ? 'WORK SESSION'
+                      : 'EVENT'}
+                </p>
+                  
+                <h2>{selectedBlock.title}</h2>
+              </div>
+                  
+              <button
+                type="button"
+                className="close-button"
+                onClick={() =>
+                  setSelectedBlock(null)
+                }
+              >
+                ×
+              </button>
+            </div>
+              
+            {selectedBlock.blockType === 'event' && (
+              <div className="form-group">
+                <label>Name</label>
+            
+                <input
+                  value={selectedBlock.title}
+                  onChange={(event) =>
+                    setSelectedBlock({
+                      ...selectedBlock,
+                      title: event.target.value,
+                    })
+                  }
+                />
+              </div>
+            )}
+      
+            {selectedBlock.blockType === 'session' && (
+              <div className="form-group">
+                <label>Date</label>
+            
+                <input
+                  type="date"
+                  value={selectedBlock.date}
+                  onChange={(event) =>
+                    setSelectedBlock({
+                      ...selectedBlock,
+                      date: event.target.value,
+                    })
+                  }
+                />
+              </div>
+            )}
+      
+            <div className="form-row">
+          
+              <div className="form-group">
+                <label>Start</label>
+          
+                <input
+                  type="time"
+                  value={selectedBlock.start}
+                  onChange={(event) =>
+                    setSelectedBlock({
+                      ...selectedBlock,
+                      start: event.target.value,
+                    })
+                  }
+                />
+              </div>
+                
+              {selectedBlock.blockType === 'event' && (
+                <div className="form-group">
+                  <label>End</label>
+              
+                  <input
+                    type="time"
+                    value={selectedBlock.end}
+                    onChange={(event) =>
+                      setSelectedBlock({
+                        ...selectedBlock,
+                        end: event.target.value,
+                      })
+                    }
+                  />
+                </div>
+              )}
+      
+            </div>
+            
+            <div className="modal-actions modal-actions-danger">
+            
+              <button
+                type="button"
+                className="delete-button"
+                onClick={() => {
+                  const confirmed = window.confirm(
+                    `Delete "${selectedBlock.title}"?`
+                  )
+                
+                  if (!confirmed) return
+                
+                  if (
+                    selectedBlock.blockType === 'event'
+                  ) {
+                    onDeleteEvent(selectedBlock.id)
+                  } else {
+                    onDeleteSession(selectedBlock.id)
+                  }
+                
+                  setSelectedBlock(null)
+                }}
+              >
+                Delete
+              </button>
+              
+              <div>
+                <button
+                  type="button"
+                  className="cancel-button"
+                  onClick={() =>
+                    setSelectedBlock(null)
+                  }
+                >
+                  Cancel
+                </button>
+                
+                <button
+                  type="submit"
+                  className="save-button"
+                >
+                  Save changes
+                </button>
+              </div>
+                
+            </div>
+                
+          </form>
+                
+        </div>
+      )}
 
     </div>
   )
