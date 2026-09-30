@@ -308,6 +308,40 @@ function CommitmentDetail({
                     >
                       Move
                     </button>
+                    
+                    <button
+                      type="button"
+                      className="session-progress-button"
+                      onClick={() => {
+                        const current = session.completedMinutes || 0
+                      
+                        const input = window.prompt(
+                          `Minutes completed out of ${session.estimatedMinutes}:`,
+                          current
+                        )
+                      
+                        if (input === null) return
+                      
+                        const minutes = Number(input)
+                      
+                        if (
+                          Number.isNaN(minutes) ||
+                          minutes < 0 ||
+                          minutes > session.estimatedMinutes
+                        ) {
+                          window.alert(
+                            `Enter a number from 0 to ${session.estimatedMinutes}.`
+                          )
+                          return
+                        }
+                      
+                        onUpdateSession(session.id, {
+                          completedMinutes: minutes,
+                        })
+                      }}
+                    >
+                      Update progress
+                    </button>
 
                     <span>
                       {session.completedMinutes || 0}

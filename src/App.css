@@ -1838,3 +1838,25 @@ h1 {
   font-size: 9px;
   cursor: pointer;
 }
+.session-progress-button,
+.session-move-button {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.pressure-dot.normal {
+  background: #8ba6c2;
+}
+
+.pressure-dot.medium {
+  background: #d6a958;
+}
+
+.pressure-dot.high {
+  background: #c96c58;
+}
