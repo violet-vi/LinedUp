@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { supabase } from './lib/supabase'
 
 import createSchedule from './utils/scheduler'
 import Pressure from './pages/pressure'
@@ -13,38 +14,157 @@ import TodayCard from './components/todayCard'
 import './App.css'
 
 function App() {
+  useEffect(() => {
+    const loadData = async () => {
+      const [
+        commitmentsResult,
+        eventsResult,
+        sessionsResult,
+      ] = await Promise.all([
+        supabase
+          .from('commitments')
+          .select('*')
+          .order('created_at'),
+
+        supabase
+          .from('calendar_events')
+          .select('*')
+          .order('created_at'),
+
+        supabase
+          .from('scheduled_sessions')
+          .select('*')
+          .order('session_date'),
+      ])
+
+      if (commitmentsResult.error) {
+        console.error(
+          'Commitments error:',
+          commitmentsResult.error
+        )
+      }
+
+      if (eventsResult.error) {
+        console.error(
+          'Events error:',
+          eventsResult.error
+        )
+      }
+
+      if (sessionsResult.error) {
+        console.error(
+          'Sessions error:',
+          sessionsResult.error
+        )
+      }
+
+      if (commitmentsResult.data) {
+        const formattedCommitments =
+          commitmentsResult.data.map((item) => ({
+            id: item.id,
+            title: item.title,
+            type: item.type,
+            deadline: item.deadline,
+
+            personalDifficulty:
+              item.personal_difficulty,
+
+            estimatedHours:
+              item.estimated_hours,
+
+            preferredTime:
+              item.preferred_time,
+
+            description:
+              item.description,
+
+            aiEnabled:
+              item.ai_enabled,
+
+            aiAnalysis:
+              item.ai_analysis,
+
+            completed:
+              item.completed,
+
+            progress: 0,
+
+            detail: item.estimated_hours
+              ? `${item.estimated_hours}h estimated`
+              : 'Not scheduled yet',
+
+            due: item.deadline
+              ? `Due ${item.deadline}`
+              : 'No deadline',
+          }))
+
+        setCommitments(formattedCommitments)
+      }
+
+      if (eventsResult.data) {
+        const formattedEvents =
+          eventsResult.data.map((item) => ({
+            id: item.id,
+            title: item.title,
+            kind: item.kind,
+            recurrence: item.recurrence,
+            date: item.event_date,
+            start: item.start_time,
+            end: item.end_time,
+            days: item.days || [],
+          }))
+
+        setCalendarEvents(formattedEvents)
+      }
+
+      if (sessionsResult.data) {
+        const formattedSessions =
+          sessionsResult.data.map((item) => ({
+            id: item.id,
+
+            commitmentId:
+              item.commitment_id,
+
+            title: item.title,
+            type: item.type,
+
+            date:
+              item.session_date,
+
+            start:
+              item.start_time,
+
+            durationMinutes:
+              item.duration_minutes,
+
+            estimatedMinutes:
+              item.estimated_minutes,
+
+            completedMinutes:
+              item.completed_minutes,
+
+            flexible:
+              item.flexible,
+
+            kind: 'session',
+          }))
+
+        setScheduledSessions(
+          formattedSessions
+        )
+      }
+    }
+
+    loadData()
+  }, [])
+    
   const [page, setPage] = useState('today')
   const [scheduledSessions, setScheduledSessions] = useState([])
   const [selectedCommitment, setSelectedCommitment] = useState(null)
   const [calendarEvents, setCalendarEvents] = useState([])
   const [showAdd, setShowAdd] = useState(false)
-  const [commitments, setCommitments] = useState([
-   {
-     id: 1,
-     title: 'DSA Assignment',
-     detail: 'Questions 3–4 · 1h scheduled today',
-     type: 'assignment',
-     progress: 68,
-     due: 'Due Sep 30',
-   },
-   {
-     id: 2,
-     title: 'Physics Midterm',
-     detail: 'Unit 2 · 45m scheduled today',
-     type: 'study',
-     progress: 32,
-     due: '3 days left',
-   },
-   {
-     id: 3,
-     title: 'Microsoft Internship',
-     detail: 'Résumé · 30m scheduled today',
-     type: 'career',
-     progress: 25,
-     due: 'Due Oct 3',
-   },
-  ])
-  const addCommitment = (form) => {
+  const [commitments, setCommitments] = useState([])
+  const addCommitment =  async (form) => {
     const newCommitment = {
       
       id: Date.now(),
@@ -80,6 +200,91 @@ function App() {
     const sessions = createSchedule(newCommitment,
       calendarEvents,
       scheduledSessions)
+    
+    const { error: commitmentError } =
+      await supabase
+        .from('commitments')
+        .insert({
+          id: newCommitment.id,
+          title: newCommitment.title,
+          type: newCommitment.type,
+        
+          deadline:
+            newCommitment.deadline || null,
+        
+          personal_difficulty:
+            newCommitment.personalDifficulty,
+        
+          estimated_hours:
+            newCommitment.estimatedHours
+              ? Number(newCommitment.estimatedHours)
+              : null,
+        
+          preferred_time:
+            newCommitment.preferredTime,
+        
+          description:
+            newCommitment.description,
+        
+          ai_enabled:
+            newCommitment.aiEnabled,
+        
+          completed: false,
+        
+          ai_analysis:
+            newCommitment.aiAnalysis,
+        })
+      
+    if (commitmentError) {
+      console.error(
+        'Could not save commitment:',
+        commitmentError
+      )
+    
+      return
+    }
+    if (sessions.length > 0) {
+      const databaseSessions =
+        sessions.map((session) => ({
+          id: session.id,
+        
+          commitment_id:
+            session.commitmentId,
+        
+          title: session.title,
+          type: session.type,
+        
+          session_date:
+            session.date,
+        
+          start_time:
+            session.start,
+        
+          duration_minutes:
+            session.durationMinutes,
+        
+          estimated_minutes:
+            session.estimatedMinutes,
+        
+          completed_minutes:
+            session.completedMinutes,
+        
+          flexible:
+            session.flexible,
+        }))
+      
+      const { error: sessionsError } =
+        await supabase
+          .from('scheduled_sessions')
+          .insert(databaseSessions)
+      
+      if (sessionsError) {
+        console.error(
+          'Could not save sessions:',
+          sessionsError
+        )
+      }
+    }
 
     console.log('Generated sessions:', sessions)
     setScheduledSessions((current) => [
@@ -87,28 +292,90 @@ function App() {
       ...sessions,
     ])
 
-    setCommitments([
-      ...commitments,
+    setCommitments((current) =>[
+      ...current,
       newCommitment,
     ])
     setShowAdd(false)    
   }
 
-  const addCalendarEvent = (event) => {
+  const addCalendarEvent = async (event) => {
     const newEvent = {
       id: Date.now(),
       ...event,
     }
-
-    setCalendarEvents([
-      ...calendarEvents,
+    
+    const { error } = await supabase
+      .from('calendar_events')
+      .insert({
+        id: newEvent.id,
+      
+        title: newEvent.title,
+        kind: newEvent.kind,
+      
+        recurrence:
+          newEvent.recurrence || 'weekly',
+      
+        event_date:
+          newEvent.date || null,
+      
+        start_time:
+          newEvent.start,
+      
+        end_time:
+          newEvent.end,
+      
+        days:
+          newEvent.days || [],
+      })
+    
+    if (error) {
+      console.error(
+        'Could not save calendar event:',
+        error
+      )
+    
+      return
+    }
+    
+    setCalendarEvents((current) => [
+      ...current,
       newEvent,
     ])
-
+    
     setShowAdd(false)
-    console.log('Calendar event:', newEvent)
   }
-    const updateCommitment = (updatedCommitment) => {
+    const updateCommitment = async (updatedCommitment) => {
+  const { error } = await supabase
+    .from('commitments')
+    .update({
+      title: updatedCommitment.title,
+      type: updatedCommitment.type,
+      deadline: updatedCommitment.deadline || null,
+      personal_difficulty:
+        updatedCommitment.personalDifficulty,
+      estimated_hours:
+        updatedCommitment.estimatedHours
+          ? Number(updatedCommitment.estimatedHours)
+          : null,
+      preferred_time:
+        updatedCommitment.preferredTime,
+      description:
+        updatedCommitment.description,
+      ai_enabled:
+        updatedCommitment.aiEnabled,
+      completed:
+        updatedCommitment.completed,
+      ai_analysis:
+        updatedCommitment.aiAnalysis,
+    })
+    .eq('id', updatedCommitment.id)
+
+  if (error) {
+    console.error('Update commitment failed:', error)
+    return
+  }
+
   setCommitments((current) =>
     current.map((commitment) =>
       commitment.id === updatedCommitment.id
@@ -118,7 +385,17 @@ function App() {
   )
 }
 
-const deleteCommitment = (commitmentId) => {
+const deleteCommitment = async (commitmentId) => {
+  const { error } = await supabase
+    .from('commitments')
+    .delete()
+    .eq('id', commitmentId)
+
+  if (error) {
+    console.error('Delete commitment failed:', error)
+    return
+  }
+
   setCommitments((current) =>
     current.filter(
       (commitment) => commitment.id !== commitmentId
@@ -135,30 +412,90 @@ const deleteCommitment = (commitmentId) => {
   setSelectedCommitment(null)
 }
 
-const toggleCommitmentComplete = (commitmentId) => {
+const toggleCommitmentComplete = async (commitmentId) => {
+  const commitment = commitments.find(
+    (item) => item.id === commitmentId
+  )
+
+  if (!commitment) return
+
+  const newCompleted = !commitment.completed
+
+  const { error } = await supabase
+    .from('commitments')
+    .update({
+      completed: newCompleted,
+    })
+    .eq('id', commitmentId)
+
+  if (error) {
+    console.error('Completion update failed:', error)
+    return
+  }
+
   setCommitments((current) =>
-    current.map((commitment) =>
-      commitment.id === commitmentId
+    current.map((item) =>
+      item.id === commitmentId
         ? {
-            ...commitment,
-            completed: !commitment.completed,
+            ...item,
+            completed: newCompleted,
           }
-        : commitment
+        : item
     )
   )
 }
 
-const updateSession = (sessionId, changes) => {
+const updateSession = async (sessionId, changes) => {
+  const databaseChanges = {}
+
+  if (changes.date !== undefined) {
+    databaseChanges.session_date =
+      changes.date
+  }
+
+  if (changes.start !== undefined) {
+    databaseChanges.start_time =
+      changes.start
+  }
+
+  if (changes.completedMinutes !== undefined) {
+    databaseChanges.completed_minutes =
+      changes.completedMinutes
+  }
+
+  const { error } = await supabase
+    .from('scheduled_sessions')
+    .update(databaseChanges)
+    .eq('id', sessionId)
+
+  if (error) {
+    console.error('Session update failed:', error)
+    return
+  }
+
   setScheduledSessions((current) =>
     current.map((session) =>
       session.id === sessionId
-        ? { ...session, ...changes }
+        ? {
+            ...session,
+            ...changes,
+          }
         : session
     )
   )
 }
 
-const deleteSession = (sessionId) => {
+const deleteSession = async (sessionId) => {
+  const { error } = await supabase
+    .from('scheduled_sessions')
+    .delete()
+    .eq('id', sessionId)
+
+  if (error) {
+    console.error('Delete session failed:', error)
+    return
+  }
+
   setScheduledSessions((current) =>
     current.filter(
       (session) => session.id !== sessionId
@@ -166,17 +503,71 @@ const deleteSession = (sessionId) => {
   )
 }
 
-const updateCalendarEvent = (eventId, changes) => {
+const updateCalendarEvent = async (
+  eventId,
+  changes
+) => {
+  const databaseChanges = {}
+
+  if (changes.title !== undefined) {
+    databaseChanges.title = changes.title
+  }
+
+  if (changes.start !== undefined) {
+    databaseChanges.start_time =
+      changes.start
+  }
+
+  if (changes.end !== undefined) {
+    databaseChanges.end_time =
+      changes.end
+  }
+
+  if (changes.date !== undefined) {
+    databaseChanges.event_date =
+      changes.date || null
+  }
+
+  if (changes.days !== undefined) {
+    databaseChanges.days = changes.days
+  }
+
+  const { error } = await supabase
+    .from('calendar_events')
+    .update(databaseChanges)
+    .eq('id', eventId)
+
+  if (error) {
+    console.error('Event update failed:', error)
+    return
+  }
+
   setCalendarEvents((current) =>
     current.map((event) =>
       event.id === eventId
-        ? { ...event, ...changes }
+        ? {
+            ...event,
+            ...changes,
+          }
         : event
     )
   )
 }
 
-const deleteCalendarEvent = (eventId) => {
+const deleteCalendarEvent = async (eventId) => {
+  const { error } = await supabase
+    .from('calendar_events')
+    .delete()
+    .eq('id', eventId)
+
+  if (error) {
+    console.error(
+      'Delete event failed:',
+      error
+    )
+    return
+  }
+
   setCalendarEvents((current) =>
     current.filter(
       (event) => event.id !== eventId
