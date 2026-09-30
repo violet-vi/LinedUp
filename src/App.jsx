@@ -142,7 +142,6 @@ const toggleCommitmentComplete = (commitmentId) => {
         ? {
             ...commitment,
             completed: !commitment.completed,
-            progress: commitment.completed ? 0 : 100,
           }
         : commitment
     )
@@ -184,6 +183,48 @@ const deleteCalendarEvent = (eventId) => {
     )
   )
 }
+const commitmentsWithProgress = commitments.map(
+  (commitment) => {
+    const commitmentSessions =
+      scheduledSessions.filter(
+        (session) =>
+          session.commitmentId === commitment.id
+      )
+
+    if (commitmentSessions.length === 0) {
+      return commitment
+    }
+
+    const totalMinutes =
+      commitmentSessions.reduce(
+        (total, session) =>
+          total + (session.estimatedMinutes || 0),
+        0
+      )
+
+    const completedMinutes =
+      commitmentSessions.reduce(
+        (total, session) =>
+          total + (session.completedMinutes || 0),
+        0
+      )
+
+    const progress =
+      totalMinutes > 0
+        ? Math.round(
+            (completedMinutes / totalMinutes) * 100
+          )
+        : 0
+
+    return {
+      ...commitment,
+      progress: commitment.completed
+        ? 100
+        : progress,
+    }
+  }
+)
+
 
   
 
@@ -200,9 +241,10 @@ const deleteCalendarEvent = (eventId) => {
 
       {selectedCommitment ? (
           <CommitmentDetail
-            commitment={commitments.find(
+            commitment={commitmentsWithProgress.find(
               (item) => item.id === selectedCommitment
             )}
+            
             sessions={scheduledSessions.filter(
               (session) =>
                 session.commitmentId === selectedCommitment
@@ -236,7 +278,7 @@ const deleteCalendarEvent = (eventId) => {
               <div className="dashboard-layout">
                 <div className="dashboard-primary">
                   <TodayCard
-                    commitments={commitments}
+                    commitments={commitmentsWithProgress}
                     onOpenCommitment={setSelectedCommitment}
                   />
 
@@ -259,7 +301,7 @@ const deleteCalendarEvent = (eventId) => {
             />
           )}
           {page === 'pressure' && (
-            <Pressure commitments={commitments} />
+            <Pressure commitments={commitmentsWithProgress} />
           )}
         </>
       )}

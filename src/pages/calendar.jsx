@@ -69,83 +69,6 @@ function CalendarEvent({ event,onClick, }) {
   const height =
     (endHour - startHour) * hourHeight
 
-  const updateCommitment = (updatedCommitment) => {
-    setCommitments((current) =>
-      current.map((commitment) =>
-        commitment.id === updatedCommitment.id
-          ? updatedCommitment
-          : commitment
-      )
-    )
-  }
-
-  const deleteCommitment = (commitmentId) => {
-    setCommitments((current) =>
-      current.filter(
-        (commitment) => commitment.id !== commitmentId
-      )
-    )
-
-    setScheduledSessions((current) =>
-      current.filter(
-        (session) =>
-          session.commitmentId !== commitmentId
-      )
-    )
-
-    setSelectedCommitment(null)
-  }
-
-  const toggleCommitmentComplete = (commitmentId) => {
-    setCommitments((current) =>
-      current.map((commitment) =>
-        commitment.id === commitmentId
-          ? {
-              ...commitment,
-              completed: !commitment.completed,
-              progress: commitment.completed ? 0 : 100,
-            }
-          : commitment
-      )
-    )
-  }
-
-  const updateSession = (sessionId, changes) => {
-    setScheduledSessions((current) =>
-      current.map((session) =>
-        session.id === sessionId
-          ? { ...session, ...changes }
-          : session
-      )
-    )
-  }
-
-  const deleteSession = (sessionId) => {
-    setScheduledSessions((current) =>
-      current.filter(
-        (session) => session.id !== sessionId
-      )
-    )
-  }
-
-  const updateCalendarEvent = (eventId, changes) => {
-    setCalendarEvents((current) =>
-      current.map((event) =>
-        event.id === eventId
-          ? { ...event, ...changes }
-          : event
-      )
-    )
-  }
-
-  const deleteCalendarEvent = (eventId) => {
-    setCalendarEvents((current) =>
-      current.filter(
-        (event) => event.id !== eventId
-      )
-    )
-  }
-
   return (
     <button
       className={`calendar-event ${event.kind}`}
@@ -218,8 +141,7 @@ function Calendar({ events = [], sessions = [],
   onUpdateSession,
   onDeleteSession,}) {
 
-  const [selectedBlock, setSelectedBlock] =
-    useState(null)
+  const [selectedBlock, setSelectedBlock] = useState(null)
   const [weekOffset, setWeekOffset] = useState(0)
 
   const days = getWeekDays(weekOffset)
@@ -369,8 +291,8 @@ function Calendar({ events = [], sessions = [],
                       event={event}
                       onClick={() =>
                         setSelectedBlock({
-                          ...session,
-                          blockType: 'session',
+                          ...event,
+                          blockType: 'event',
                         })
                       }
                     />
@@ -415,6 +337,8 @@ function Calendar({ events = [], sessions = [],
                     title: selectedBlock.title,
                     start: selectedBlock.start,
                     end: selectedBlock.end,
+                    date: selectedBlock.date,
+                    days: selectedBlock.days,
                   }
                 )
               } else {
@@ -487,6 +411,23 @@ function Calendar({ events = [], sessions = [],
                 />
               </div>
             )}
+            {selectedBlock.blockType === 'event' &&
+              selectedBlock.recurrence === 'once' && (
+                <div className="form-group">
+                  <label>Date</label>
+              
+                  <input
+                    type="date"
+                    value={selectedBlock.date || ''}
+                    onChange={(event) =>
+                      setSelectedBlock({
+                        ...selectedBlock,
+                        date: event.target.value,
+                      })
+                    }
+                  />
+                </div>
+            )}
       
             <div className="form-row">
           
@@ -523,6 +464,50 @@ function Calendar({ events = [], sessions = [],
               )}
       
             </div>
+            {selectedBlock.blockType === 'event' &&
+              selectedBlock.days && (
+                <div className="form-group">
+                
+                  <label>Repeats on</label>
+              
+                  <div className="weekday-selector">
+              
+                    {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(
+                      (day, index) => (
+                        <button
+                          type="button"
+                          key={index}
+                          className={
+                            selectedBlock.days.includes(index)
+                              ? 'selected'
+                              : ''
+                          }
+                          onClick={() => {
+                            const alreadySelected =
+                              selectedBlock.days.includes(index)
+                          
+                            setSelectedBlock({
+                              ...selectedBlock,
+                            
+                              days: alreadySelected
+                                ? selectedBlock.days.filter(
+                                    (item) => item !== index
+                                  )
+                                : [
+                                    ...selectedBlock.days,
+                                    index,
+                                  ],
+                            })
+                          }}
+                        >
+                          {day}
+                        </button>
+                      )
+                    )}
+
+                  </div>
+                </div>
+            )}
             
             <div className="modal-actions modal-actions-danger">
             
