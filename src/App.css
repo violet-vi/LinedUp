@@ -1932,3 +1932,70 @@ h1 {
   font-size: 11px;
   line-height: 1.6;
 }
+
+.auth-page {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: var(--background);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+
+  padding: 32px;
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.auth-brand {
+  margin-bottom: 28px;
+
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.auth-brand span {
+  opacity: 0.5;
+}
+
+.auth-card h1 {
+  margin-bottom: 6px;
+}
+
+.auth-card .form-group:first-of-type {
+  margin-top: 24px;
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.auth-switch {
+  width: 100%;
+  margin-top: 14px;
+
+  border: 0;
+  background: transparent;
+
+  color: var(--muted);
+  font-size: 10px;
+
+  cursor: pointer;
+}
+
+.auth-message {
+  margin-top: 10px;
+
+  color: var(--muted);
+  font-size: 10px;
+}
