@@ -1999,3 +1999,22 @@ h1 {
   color: var(--muted);
   font-size: 10px;
 }
+.intelligence-label {
+  color: #8a6f47;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.intelligence-title {
+  color: #2f2a24;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.intelligence-description {
+  color: #6f685f;
+  font-size: 12px;
+  line-height: 1.6;
+}

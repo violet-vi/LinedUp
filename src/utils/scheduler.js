@@ -190,14 +190,26 @@ function createSchedule(
   calendarEvents = [],
   existingSessions = []
 ) {
-  let remainingMinutes =
+  const requestedMinutes =
     Number(commitment.estimatedHours) * 60
+
+    let remainingMinutes = requestedMinutes
 
   if (
     !remainingMinutes ||
     !commitment.deadline
   ) {
-    return []
+    const emptySessions = []
+
+    emptySessions.requestedMinutes =
+      requestedMinutes || 0
+
+    emptySessions.scheduledMinutes = 0
+
+    emptySessions.unscheduledMinutes =
+      requestedMinutes || 0
+
+    return emptySessions
   }
 
 
@@ -209,7 +221,17 @@ function createSchedule(
   today.setHours(0, 0, 0, 0)
 
   if (deadline < today) {
-    return []
+    const emptySessions = []
+
+    emptySessions.requestedMinutes =
+      requestedMinutes
+
+    emptySessions.scheduledMinutes = 0
+
+    emptySessions.unscheduledMinutes =
+      requestedMinutes
+
+    return emptySessions
   }
 
 
@@ -232,13 +254,7 @@ function createSchedule(
       )
 
 
-    /*
-      Existing sessions PLUS the sessions
-      we've generated during THIS scheduling run.
 
-      Otherwise two new sessions could accidentally
-      occupy the same time.
-    */
     const allSessions = [
       ...existingSessions,
       ...newSessions,
@@ -321,6 +337,15 @@ function createSchedule(
     )
   }
 
+
+  newSessions.requestedMinutes =
+    requestedMinutes
+
+  newSessions.scheduledMinutes =
+    requestedMinutes - remainingMinutes
+
+  newSessions.unscheduledMinutes =
+    remainingMinutes
 
   return newSessions
 }

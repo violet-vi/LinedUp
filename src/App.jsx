@@ -296,6 +296,16 @@ if (analysis) {
     const sessions = createSchedule(newCommitment,
       calendarEvents,
       scheduledSessions)
+      newCommitment.schedulingStatus = {
+        requestedMinutes:
+          sessions.requestedMinutes || 0,
+
+        scheduledMinutes:
+          sessions.scheduledMinutes || 0,
+
+        unscheduledMinutes:
+          sessions.unscheduledMinutes || 0,
+      }
     
     const { error: commitmentError } =
       await supabase
@@ -1033,7 +1043,7 @@ if (!user) {
                   <h1>Good afternoon.</h1>
           
                   <p className="subtitle">
-                    {commitments.length} commitments · looking manageable.
+                    {commitments.length} active commitments
                   </p>
                 </div>
           
@@ -1064,7 +1074,10 @@ if (!user) {
                   </button>
                 </div>
           
-                <IntelligencePanel />
+                <IntelligencePanel commitments={commitmentsWithProgress}
+                  sessions={scheduledSessions}
+                  events={calendarEvents}
+                />
               </div>
             </>
           )}

@@ -322,22 +322,6 @@ function AddCommitment({ onClose, onSave, onSaveEvent, }) {
                 </button>
               </div>
               
-              {form.aiEnabled && (
-                  <div className="ai-upload">
-                    <div>
-                      <strong>Have the actual brief?</strong>
-                      <p>
-                        PDF analysis is coming next. For now, paste its
-                        contents above.
-                      </p>
-                    </div>
-
-                    <button type="button" disabled>
-                      Upload PDF
-                    </button>
-                  </div>
-                )}
-
               </>
             )}
 

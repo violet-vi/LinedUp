@@ -1,12 +1,51 @@
-function IntelligencePanel() {
+function IntelligencePanel({
+  commitments = [],
+  sessions = [],
+  events = [],
+}) {
+  const activeCommitments =
+    commitments.filter(
+      (commitment) => !commitment.completed
+    )
+
+  const attentionItems =
+    activeCommitments
+      .filter((commitment) => {
+        if (!commitment.deadline) return false
+
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        const deadline = new Date(
+          `${commitment.deadline}T00:00:00`
+        )
+
+        const daysLeft = Math.ceil(
+          (deadline - today) /
+            (1000 * 60 * 60 * 24)
+        )
+
+        return (
+          daysLeft <= 3 ||
+          (commitment.progress || 0) < 30
+        )
+      })
+      .slice(0, 3)
+
   return (
     <aside className="intelligence-panel">
       <div>
-        <p className="section-label">WEEK AHEAD</p>
-        <h2>Thursday looks heavy.</h2>
-        <p className="panel-description">
-          You're currently planning more work than your available time.
-        </p>
+        <p className="section-label intelligence-label">
+            WEEK AHEAD
+          </p>
+            
+          <h2 className="intelligence-title">
+            Thursday looks heavy.
+          </h2>
+            
+          <p className="intelligence-description">
+            You're currently planning more work than your available time.
+          </p>
       </div>
 
       <div className="pressure-preview">
@@ -36,39 +75,37 @@ function IntelligencePanel() {
         </div>
       </div>
 
-      <div className="attention-section">
-        <p className="section-label">NEEDS ATTENTION</p>
+      <section className="attention-section">
 
-        <div className="attention-item">
-          <span className="attention-dot study" />
-
-          <div>
-            <strong>Physics midterm</strong>
-            <p>32% prepared · 3 days left</p>
-          </div>
-        </div>
-
-        <div className="attention-item">
-          <span className="attention-dot career" />
-
-          <div>
-            <strong>Microsoft Internship</strong>
-            <p>Not started · 5 days left</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="suggestion">
-        <p className="section-label">LINEDUP SUGGESTS</p>
-
-        <strong>Move 45m of Physics to Tuesday.</strong>
-
-        <p>
-          That keeps Thursday within your available capacity.
+        <p className="section-label">
+          NEEDS ATTENTION
         </p>
 
-        <button>Rebalance week</button>
-      </div>
+        <div className="attention-list">
+          {attentionItems.length === 0 ? (
+            <p className="subtitle">
+              Nothing urgent right now.
+            </p>
+          ) : (
+            attentionItems.map((commitment) => (
+              <div
+                className="attention-item"
+                key={commitment.id}
+              >
+                <strong>
+                  {commitment.title}
+                </strong>
+
+                <span>
+                  {commitment.progress || 0}% complete
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+
+      </section>
+
     </aside>
   )
 }
