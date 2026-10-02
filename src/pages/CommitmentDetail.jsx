@@ -57,6 +57,7 @@ function CommitmentDetail({
   const [editForm, setEditForm] = useState({
     title: commitment?.title || '',
     deadline: commitment?.deadline || '',
+    priority: commitment?.priority || 'medium',
     estimatedHours: commitment?.estimatedHours || '',
     personalDifficulty:
       commitment?.personalDifficulty || 3,
@@ -405,9 +406,11 @@ function CommitmentDetail({
                 <span>Estimated effort</span>
 
                 <strong>
-                  {commitment.estimatedHours
-                    ? `${commitment.estimatedHours} hours`
-                    : 'Not estimated'}
+                  {commitment.aiAnalysis?.estimatedHours
+                    ? `${commitment.aiAnalysis.estimatedHours} hours`
+                    : commitment.estimatedHours
+                      ? `${commitment.estimatedHours} hours`
+                      : 'Not estimated'}
                 </strong>
               </div>
 
@@ -421,32 +424,38 @@ function CommitmentDetail({
               </div>
 
               <div className="analysis-copy">
-                <p>
-                  LinedUp is using your deadline,
-                  difficulty, preferred work time and
-                  availability to build this plan.
-                </p>
 
-                {commitment.description && (
+                {commitment.aiAnalysis?.reasoning && (
                   <p>
-                    {commitment.description}
+                    {commitment.aiAnalysis.reasoning}
                   </p>
                 )}
+
+                {commitment.aiAnalysis?.subtasks?.length > 0 && (
+                  <>
+                    <strong>Suggested breakdown</strong>
+                
+                    <ul>
+                      {commitment.aiAnalysis.subtasks.map(
+                        (subtask, index) => (
+                          <li key={index}>
+                            {subtask}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </>
+                )}
+
               </div>
 
               <div className="analysis-suggestion">
                 <span>SUGGESTION</span>
-
+                            
                 <strong>
-                  Keep your scheduled sessions up
-                  to date.
+                  {commitment.aiAnalysis?.suggestion ||
+                    'Keep your progress updated so LinedUp can adapt your plan.'}
                 </strong>
-
-                <p>
-                  LinedUp will eventually rebalance
-                  unfinished work around your
-                  remaining availability.
-                </p>
               </div>
             </>
           ) : (
@@ -697,6 +706,23 @@ function CommitmentDetail({
                 <option value={3}>3 — Moderate</option>
                 <option value={4}>4 — Hard</option>
                 <option value={5}>5 — Very hard</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Priority</label>
+
+              <select
+                value={editForm.priority}
+                onChange={(event) =>
+                  setEditForm({
+                    ...editForm,
+                    priority: event.target.value,
+                  })
+                }
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
               </select>
             </div>
               
