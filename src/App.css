@@ -1877,3 +1877,58 @@ h1 {
 
   cursor: pointer;
 }
+
+.agent-panel {
+  margin-top: 16px;
+  padding: 20px;
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.agent-panel h2 {
+  margin: 4px 0 6px;
+}
+
+.agent-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.agent-form input {
+  flex: 1;
+  min-width: 0;
+
+  padding: 12px 14px;
+
+  border: 1px solid var(--border);
+  border-radius: 9px;
+
+  background: var(--background);
+  color: var(--text);
+}
+
+.agent-form button {
+  width: 44px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: var(--text);
+  color: white;
+
+  cursor: pointer;
+}
+
+.agent-reply {
+  margin-top: 14px;
+  padding: 12px 14px;
+
+  background: var(--background);
+  border-radius: 9px;
+
+  font-size: 11px;
+  line-height: 1.6;
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
 
+import AgentPanel from './components/agentPanel'
 import rebalanceSchedule from './utils/rebalanceSchedule'
 import createSchedule from './utils/scheduler'
 import Pressure from './pages/pressure'
@@ -761,6 +762,151 @@ const rebalanceEverything = async (
     rebuiltSessions
   )
 }
+const handleAgentMessage = async (message) => {
+  const { data, error } =
+    await supabase.functions.invoke(
+      'linedup-agent',
+      {
+        body: {
+          message,
+
+          commitments:
+            commitments.map((item) => ({
+              id: item.id,
+              title: item.title,
+              deadline: item.deadline,
+              priority: item.priority,
+              completed: item.completed,
+            })),
+
+          events: calendarEvents,
+
+          sessions: scheduledSessions,
+
+          currentDate:
+            new Date().toISOString(),
+        },
+      }
+    )
+
+  if (error) {
+    console.error('Agent failed:', error)
+
+    return 'I could not process that request.'
+  }
+
+  console.log('Agent action:', data)
+
+  if (data.action === 'EXPLAIN') {
+    return data.reply
+  }
+
+  if (data.action === 'UNKNOWN') {
+    return data.reply
+  }
+
+  if (data.action === 'CHANGE_PRIORITY') {
+    const commitment =
+      commitments.find(
+        (item) =>
+          item.id === data.commitmentId
+      )
+
+    if (!commitment) {
+      return 'I could not find that commitment.'
+    }
+
+    const updated = {
+      ...commitment,
+      priority: data.priority,
+    }
+
+    await updateCommitment(updated)
+
+    /*
+      The AI chose the action.
+      Our scheduler decides the new times.
+    */
+    const nextCommitments =
+      commitments.map((item) =>
+        item.id === updated.id
+          ? updated
+          : item
+      )
+
+    await rebalanceEverything(
+      nextCommitments,
+      calendarEvents,
+      scheduledSessions
+    )
+
+    return data.reply
+  }
+
+  if (data.action === 'PROTECT_TIME') {
+    const newEvent = {
+      id: Date.now(),
+
+      title:
+        data.title || 'Unavailable',
+
+      kind: 'protected',
+      recurrence: 'once',
+
+      date: data.date,
+
+      start: data.start,
+      end: data.end,
+
+      days: [],
+    }
+
+    /*
+      Save directly because addCalendarEvent
+      generates its own ID.
+    */
+    const { error: eventError } =
+      await supabase
+        .from('calendar_events')
+        .insert({
+          id: newEvent.id,
+          title: newEvent.title,
+          kind: newEvent.kind,
+          recurrence: 'once',
+          event_date: newEvent.date,
+          start_time: newEvent.start,
+          end_time: newEvent.end,
+          days: [],
+        })
+
+    if (eventError) {
+      console.error(
+        'Agent event failed:',
+        eventError
+      )
+
+      return 'I understood the request, but could not save the change.'
+    }
+
+    const nextEvents = [
+      ...calendarEvents,
+      newEvent,
+    ]
+
+    setCalendarEvents(nextEvents)
+
+    await rebalanceEverything(
+      commitments,
+      nextEvents,
+      scheduledSessions
+    )
+
+    return data.reply
+  }
+
+  return data.reply ||
+    'I could not understand that request.'
+}
 
 const commitmentsWithProgress = commitments.map(
   (commitment) => {
@@ -860,6 +1006,9 @@ const commitmentsWithProgress = commitments.map(
                   />
 
                   <EnergyCheckIn />
+                  <AgentPanel
+                    onSend={handleAgentMessage}
+                  />
                   <button
                     className="rebalance-button"
                     onClick={() =>
