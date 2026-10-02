@@ -447,19 +447,8 @@ if (analysis) {
             : commitment
         )
       )
-      const nextCommitments =
-  commitments.map((commitment) =>
-    commitment.id === updatedCommitment.id
-      ? updatedCommitment
-      : commitment
-  )
-
-setCommitments(nextCommitments)
-await rebalanceEverything(
-  nextCommitments,
-  calendarEvents,
-  scheduledSessions
-)
+      
+      
       
 }
 
@@ -651,15 +640,7 @@ const deleteCalendarEvent = async (eventId) => {
       (event) => event.id !== eventId
     )
   )
-  const nextEvents =
-  calendarEvents.map((event) =>
-    event.id === eventId
-      ? {
-          ...event,
-          ...changes,
-        }
-      : event
-  )
+
 
 setCalendarEvents(nextEvents)
 }
@@ -700,6 +681,7 @@ const rebalanceEverything = async (
   /*
     Replace incomplete sessions in Supabase.
   */
+ 
 
   const incompleteOldSessions =
     nextSessions.filter(
@@ -707,18 +689,6 @@ const rebalanceEverything = async (
         !completedIds.has(session.id)
 
     )
-  const changedEvent =
-    nextEvents.find(
-      (event) => event.id === eventId
-    )
-
-  if (changedEvent?.kind === 'protected') {
-    await rebalanceEverything(
-      commitments,
-      nextEvents,
-      scheduledSessions
-    )
-  }
 
   if (incompleteOldSessions.length > 0) {
     const ids =
@@ -832,33 +802,8 @@ const commitmentsWithProgress = commitments.map(
         : progress,
     }
   }
-)
-const testAI = async () => {
-  const { data, error } =
-    await supabase.functions.invoke(
-      'analyze-commitment',
-      {
-        body: {
-          title: 'Physics Midterm',
-          type: 'exam',
-          deadline: '2026-10-03',
-          estimatedHours: 5,
-          difficulty: 4,
-
-          description:
-            'Units 2 to 5. Numerical problems, derivations and revision.',
-
-          preferredTime: 'evening',
-        },
-      }
-    )
-
-  console.log('AI DATA:', data)
-  console.log('AI ERROR:', error)
-}
-
-
   
+)
 
 
   return (
@@ -922,12 +867,6 @@ const testAI = async () => {
                     }
                   >
                     Rebalance my week
-                  </button>
-                  <button
-                    className="rebalance-button"
-                    onClick={testAI}
-                  >
-                    Test AI
                   </button>
                 </div>
           
