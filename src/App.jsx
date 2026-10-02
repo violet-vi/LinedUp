@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
 
-import AgentPanel from './components/agentPanel'
 import rebalanceSchedule from './utils/rebalanceSchedule'
 import createSchedule from './utils/scheduler'
 import Pressure from './pages/pressure'
@@ -12,11 +11,44 @@ import IntelligencePanel from './components/intelligencePanel'
 import CommitmentDetail from './pages/CommitmentDetail'
 import EnergyCheckIn from './components/energy'
 import TodayCard from './components/todayCard'
+import Auth from './components/auth'
+import AgentPanel from './components/agentPanel'
 
 import './App.css'
 
 function App() {
+  const [page, setPage] = useState('today')
+  const [scheduledSessions, setScheduledSessions] = useState([])
+  const [selectedCommitment, setSelectedCommitment] = useState(null)
+  const [calendarEvents, setCalendarEvents] = useState([])
+  const [showAdd, setShowAdd] = useState(false)
+  const [commitments, setCommitments] = useState([])
+  const [user, setUser] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
   useEffect(() => {
+      supabase.auth
+        .getUser()
+        .then(({ data }) => {
+          setUser(data.user || null)
+          setAuthLoading(false)
+        })
+      
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(
+        (_event, session) => {
+          setUser(session?.user || null)
+          setAuthLoading(false)
+        }
+      )
+    
+      return () => {
+        subscription.unsubscribe()
+      }
+    }, [])
+
+  useEffect(() => {
+    
     const loadData = async () => {
       const [
         commitmentsResult,
@@ -161,15 +193,16 @@ function App() {
       }
     }
 
-    loadData()
-  }, [])
+    if (user) {
+      loadData()
+    } else {
+      setCommitments([])
+      setCalendarEvents([])
+      setScheduledSessions([])
+    }
+    }, [user])
     
-  const [page, setPage] = useState('today')
-  const [scheduledSessions, setScheduledSessions] = useState([])
-  const [selectedCommitment, setSelectedCommitment] = useState(null)
-  const [calendarEvents, setCalendarEvents] = useState([])
-  const [showAdd, setShowAdd] = useState(false)
-  const [commitments, setCommitments] = useState([])
+
   const today = new Date()
   const analyzeCommitment = async (commitment) => {
   if (!commitment.aiEnabled) {
@@ -223,6 +256,7 @@ function App() {
     const newCommitment = {
       
       id: Date.now(),
+      
 
       title: form.title,
       type: form.type,
@@ -268,6 +302,7 @@ if (analysis) {
         .from('commitments')
         .insert({
           id: newCommitment.id,
+          user_id: user.id,
           title: newCommitment.title,
           type: newCommitment.type,
 
@@ -311,6 +346,7 @@ if (analysis) {
       const databaseSessions =
         sessions.map((session) => ({
           id: session.id,
+          user_id: user.id,
         
           commitment_id:
             session.commitmentId,
@@ -373,7 +409,7 @@ if (analysis) {
       .from('calendar_events')
       .insert({
         id: newEvent.id,
-      
+        user_id: user.id,
         title: newEvent.title,
         kind: newEvent.kind,
       
@@ -622,8 +658,7 @@ const updateCalendarEvent = async (
   )
 }
 
-const deleteCalendarEvent = async (eventId) => {
-  const { error } = await supabase
+const deleteCalendarEvent = async (eventId) => {  const { error } = await supabase
     .from('calendar_events')
     .delete()
     .eq('id', eventId)
@@ -640,11 +675,7 @@ const deleteCalendarEvent = async (eventId) => {
     current.filter(
       (event) => event.id !== eventId
     )
-  )
-
-
-setCalendarEvents(nextEvents)
-}
+  )}
 const rebalanceEverything = async (
   nextCommitments = commitments,
   nextEvents = calendarEvents,
@@ -717,6 +748,7 @@ const rebalanceEverything = async (
       newFlexibleSessions.map(
         (session) => ({
           id: session.id,
+          user_id: user.id,
 
           commitment_id:
             session.commitmentId,
@@ -870,6 +902,7 @@ const handleAgentMessage = async (message) => {
         .from('calendar_events')
         .insert({
           id: newEvent.id,
+          user_id: user.id,
           title: newEvent.title,
           kind: newEvent.kind,
           recurrence: 'once',
@@ -950,6 +983,17 @@ const commitmentsWithProgress = commitments.map(
   }
   
 )
+if (authLoading) {
+  return (
+    <div className="auth-page">
+      Loading LinedUp...
+    </div>
+  )
+}
+
+if (!user) {
+  return <Auth />
+}
 
 
   return (
@@ -958,6 +1002,7 @@ const commitmentsWithProgress = commitments.map(
         currentPage={page}
         onNavigate={setPage}
         onAdd={() => setShowAdd(true)}
+        onLogout={() => supabase.auth.signOut()}
       />
 
       <main className="main-content">

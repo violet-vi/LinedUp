@@ -1,4 +1,4 @@
-function TopNav({ currentPage, onNavigate ,onAdd}) {
+function TopNav({ currentPage, onNavigate ,onAdd ,onLogout,}) {
   return (
     <header className="top-nav">
       <div className="top-nav-inner">
@@ -49,6 +49,13 @@ function TopNav({ currentPage, onNavigate ,onAdd}) {
             onClick={onAdd}
             >            
             + Add
+          </button>
+
+          <button
+            className="nav-link"
+            onClick={onLogout}
+          >
+            Sign out
           </button>
         </nav>
 
