@@ -23,6 +23,7 @@ function AddCommitment({ onClose, onSave, onSaveEvent, }) {
     type: 'assignment',
     deadline: '',
     personalDifficulty: 3,
+    priority: 'medium',
     estimatedHours: '',
     preferredTime: 'anytime',
     description: '',
@@ -270,6 +271,20 @@ function AddCommitment({ onClose, onSave, onSaveEvent, }) {
                   <option value="morning">Morning</option>
                   <option value="afternoon">Afternoon</option>
                   <option value="evening">Evening</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Priority</label>
+                              
+                <select
+                  value={form.priority}
+                  onChange={(event) =>
+                    updateField('priority', event.target.value)
+                  }
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
                 </select>
               </div>
               

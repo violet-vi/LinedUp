@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
 
+import rebalanceSchedule from './utils/rebalanceSchedule'
 import createSchedule from './utils/scheduler'
 import Pressure from './pages/pressure'
 import Calendar from './pages/calendar'
@@ -20,6 +21,7 @@ function App() {
         commitmentsResult,
         eventsResult,
         sessionsResult,
+        
       ] = await Promise.all([
         supabase
           .from('commitments')
@@ -68,6 +70,9 @@ function App() {
 
             personalDifficulty:
               item.personal_difficulty,
+
+            priority: 
+              item.priority || 'medium',
 
             estimatedHours:
               item.estimated_hours,
@@ -164,6 +169,55 @@ function App() {
   const [calendarEvents, setCalendarEvents] = useState([])
   const [showAdd, setShowAdd] = useState(false)
   const [commitments, setCommitments] = useState([])
+  const today = new Date()
+  const analyzeCommitment = async (commitment) => {
+  if (!commitment.aiEnabled) {
+    return null
+  }
+
+  const { data, error } =
+    await supabase.functions.invoke(
+      'analyze-commitment',
+      {
+        body: {
+          title: commitment.title,
+          type: commitment.type,
+          deadline: commitment.deadline,
+
+          estimatedHours:
+            commitment.estimatedHours,
+
+          difficulty:
+            commitment.personalDifficulty,
+
+          description:
+            commitment.description,
+
+          preferredTime:
+            commitment.preferredTime,
+        },
+      }
+    )
+
+  if (error) {
+    console.error(
+      'AI analysis failed:',
+      error
+    )
+
+    return null
+  }
+
+  return data
+}
+  const currentDay = today.toLocaleDateString('en-US', {
+    weekday: 'long',
+  })
+
+  const currentDate = today.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+  })
   const addCommitment =  async (form) => {
     const newCommitment = {
       
@@ -173,6 +227,7 @@ function App() {
       type: form.type,
 
       deadline: form.deadline,
+      priority: form.priority,
       personalDifficulty: form.personalDifficulty,
       estimatedHours: form.estimatedHours,
       preferredTime: form.preferredTime,
@@ -197,6 +252,12 @@ function App() {
         : null,
     }
     console.log('New commitment:', newCommitment)
+    const analysis =
+  await analyzeCommitment(newCommitment)
+
+if (analysis) {
+  newCommitment.aiAnalysis = analysis
+}
     const sessions = createSchedule(newCommitment,
       calendarEvents,
       scheduledSessions)
@@ -208,6 +269,8 @@ function App() {
           id: newCommitment.id,
           title: newCommitment.title,
           type: newCommitment.type,
+
+          priority: newCommitment.priority,
         
           deadline:
             newCommitment.deadline || null,
@@ -346,43 +409,58 @@ function App() {
     setShowAdd(false)
   }
     const updateCommitment = async (updatedCommitment) => {
-  const { error } = await supabase
-    .from('commitments')
-    .update({
-      title: updatedCommitment.title,
-      type: updatedCommitment.type,
-      deadline: updatedCommitment.deadline || null,
-      personal_difficulty:
-        updatedCommitment.personalDifficulty,
-      estimated_hours:
-        updatedCommitment.estimatedHours
-          ? Number(updatedCommitment.estimatedHours)
-          : null,
-      preferred_time:
-        updatedCommitment.preferredTime,
-      description:
-        updatedCommitment.description,
-      ai_enabled:
-        updatedCommitment.aiEnabled,
-      completed:
-        updatedCommitment.completed,
-      ai_analysis:
-        updatedCommitment.aiAnalysis,
-    })
-    .eq('id', updatedCommitment.id)
-
-  if (error) {
-    console.error('Update commitment failed:', error)
-    return
-  }
-
-  setCommitments((current) =>
-    current.map((commitment) =>
-      commitment.id === updatedCommitment.id
-        ? updatedCommitment
-        : commitment
-    )
+      const { error } = await supabase
+        .from('commitments')
+        .update({
+          title: updatedCommitment.title,
+          type: updatedCommitment.type,
+          priority: updatedCommitment.priority,
+          deadline: updatedCommitment.deadline || null,
+          personal_difficulty:
+            updatedCommitment.personalDifficulty,
+          estimated_hours:
+            updatedCommitment.estimatedHours
+              ? Number(updatedCommitment.estimatedHours)
+              : null,
+          preferred_time:
+            updatedCommitment.preferredTime,
+          description:
+            updatedCommitment.description,
+          ai_enabled:
+            updatedCommitment.aiEnabled,
+          completed:
+            updatedCommitment.completed,
+          ai_analysis:
+            updatedCommitment.aiAnalysis,
+        })
+        .eq('id', updatedCommitment.id)
+      
+      if (error) {
+        console.error('Update commitment failed:', error)
+        return
+      }
+    
+      setCommitments((current) =>
+        current.map((commitment) =>
+          commitment.id === updatedCommitment.id
+            ? updatedCommitment
+            : commitment
+        )
+      )
+      const nextCommitments =
+  commitments.map((commitment) =>
+    commitment.id === updatedCommitment.id
+      ? updatedCommitment
+      : commitment
   )
+
+setCommitments(nextCommitments)
+await rebalanceEverything(
+  nextCommitments,
+  calendarEvents,
+  scheduledSessions
+)
+      
 }
 
 const deleteCommitment = async (commitmentId) => {
@@ -573,7 +651,147 @@ const deleteCalendarEvent = async (eventId) => {
       (event) => event.id !== eventId
     )
   )
+  const nextEvents =
+  calendarEvents.map((event) =>
+    event.id === eventId
+      ? {
+          ...event,
+          ...changes,
+        }
+      : event
+  )
+
+setCalendarEvents(nextEvents)
 }
+const rebalanceEverything = async (
+  nextCommitments = commitments,
+  nextEvents = calendarEvents,
+  nextSessions = scheduledSessions
+) => {
+  const rebuiltSessions = rebalanceSchedule({
+    commitments: nextCommitments,
+    calendarEvents: nextEvents,
+    existingSessions: nextSessions,
+  })
+
+  /*
+    Keep fully completed sessions as history.
+    Everything else gets rebuilt.
+  */
+  const completedSessions =
+    nextSessions.filter(
+      (session) =>
+        (session.completedMinutes || 0) >=
+        (session.estimatedMinutes || 0)
+    )
+
+  const completedIds = new Set(
+    completedSessions.map(
+      (session) => session.id
+    )
+  )
+
+  const newFlexibleSessions =
+    rebuiltSessions.filter(
+      (session) =>
+        !completedIds.has(session.id)
+    )
+
+  /*
+    Replace incomplete sessions in Supabase.
+  */
+
+  const incompleteOldSessions =
+    nextSessions.filter(
+      (session) =>
+        !completedIds.has(session.id)
+
+    )
+  const changedEvent =
+    nextEvents.find(
+      (event) => event.id === eventId
+    )
+
+  if (changedEvent?.kind === 'protected') {
+    await rebalanceEverything(
+      commitments,
+      nextEvents,
+      scheduledSessions
+    )
+  }
+
+  if (incompleteOldSessions.length > 0) {
+    const ids =
+      incompleteOldSessions.map(
+        (session) => session.id
+      )
+
+    const { error: deleteError } =
+      await supabase
+        .from('scheduled_sessions')
+        .delete()
+        .in('id', ids)
+
+    if (deleteError) {
+      console.error(
+        'Could not clear old schedule:',
+        deleteError
+      )
+      return
+    }
+  }
+
+  if (newFlexibleSessions.length > 0) {
+    const rows =
+      newFlexibleSessions.map(
+        (session) => ({
+          id: session.id,
+
+          commitment_id:
+            session.commitmentId,
+
+          title: session.title,
+          type: session.type,
+
+          session_date:
+            session.date,
+
+          start_time:
+            session.start,
+
+          duration_minutes:
+            session.durationMinutes,
+
+          estimated_minutes:
+            session.estimatedMinutes,
+
+          completed_minutes:
+            session.completedMinutes || 0,
+
+          flexible:
+            session.flexible ?? true,
+        })
+      )
+
+    const { error: insertError } =
+      await supabase
+        .from('scheduled_sessions')
+        .insert(rows)
+
+    if (insertError) {
+      console.error(
+        'Could not save rebuilt schedule:',
+        insertError
+      )
+      return
+    }
+  }
+
+  setScheduledSessions(
+    rebuiltSessions
+  )
+}
+
 const commitmentsWithProgress = commitments.map(
   (commitment) => {
     const commitmentSessions =
@@ -615,6 +833,29 @@ const commitmentsWithProgress = commitments.map(
     }
   }
 )
+const testAI = async () => {
+  const { data, error } =
+    await supabase.functions.invoke(
+      'analyze-commitment',
+      {
+        body: {
+          title: 'Physics Midterm',
+          type: 'exam',
+          deadline: '2026-10-03',
+          estimatedHours: 5,
+          difficulty: 4,
+
+          description:
+            'Units 2 to 5. Numerical problems, derivations and revision.',
+
+          preferredTime: 'evening',
+        },
+      }
+    )
+
+  console.log('AI DATA:', data)
+  console.log('AI ERROR:', error)
+}
 
 
   
@@ -661,8 +902,8 @@ const commitmentsWithProgress = commitments.map(
                 </div>
           
                 <div className="dashboard-date">
-                  <span>Tuesday</span>
-                  <strong>September 29</strong>
+                  <span>{currentDay}</span>
+                  <strong>{currentDate}</strong>
                 </div>
               </div>
           
@@ -674,6 +915,20 @@ const commitmentsWithProgress = commitments.map(
                   />
 
                   <EnergyCheckIn />
+                  <button
+                    className="rebalance-button"
+                    onClick={() =>
+                      rebalanceEverything()
+                    }
+                  >
+                    Rebalance my week
+                  </button>
+                  <button
+                    className="rebalance-button"
+                    onClick={testAI}
+                  >
+                    Test AI
+                  </button>
                 </div>
           
                 <IntelligencePanel />
