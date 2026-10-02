@@ -186,6 +186,8 @@ function CommitmentDetail({
                 : 'Not estimated'}
           </strong>
         </div>
+        
+
 
         <div>
           <span>Your difficulty</span>
@@ -218,6 +220,7 @@ function CommitmentDetail({
 
       </div>
 
+
       <div className="detail-grid">
 
         <section className="work-plan">
@@ -240,6 +243,17 @@ function CommitmentDetail({
                 : 'sessions'}
             </span>
           </div>
+          {commitment.description && (
+            <section className="commitment-description">
+              <p className="section-label">
+                DESCRIPTION / REQUIREMENTS
+              </p>
+                          
+              <p>
+                {commitment.description}
+              </p>
+            </section>
+          )}
 
           <div className="session-list">
 

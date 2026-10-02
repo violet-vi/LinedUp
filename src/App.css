@@ -2018,3 +2018,18 @@ h1 {
   font-size: 12px;
   line-height: 1.6;
 }
+
+.commitment-description {
+  margin: 20px 0;
+  padding: 18px 20px;
+
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.commitment-description p:last-child {
+  margin: 8px 0 0;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
